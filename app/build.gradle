@@ -61,4 +61,10 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+
+    // ViewModel implementation
+    implementation"androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation"androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+
+
 }
