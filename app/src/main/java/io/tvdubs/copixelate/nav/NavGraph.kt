@@ -41,7 +41,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.MessageThread.route
         ) {
-            MessageThreadScreen(navController = navController)
+            MessageThreadScreen(navController = navController, viewModel = appViewModel)
         }
     }
 }
