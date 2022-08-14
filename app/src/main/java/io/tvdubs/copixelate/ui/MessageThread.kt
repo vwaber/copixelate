@@ -17,19 +17,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.nav.Screen
-import java.util.Random
+import io.tvdubs.copixelate.viewmodel.AppViewModel
 
 @Composable
-fun MessageThreadScreen(navController: NavController) {
-    // Small random bitmap for demo purposes
-    val emptyArray by remember {
-        mutableStateOf(
-            IntArray(16) { Random().nextInt() }
-        )
-    }
+fun MessageThreadScreen(navController: NavController, viewModel: AppViewModel) {
+    MessageThreadContent(
+        onBackClick = { navController.popBackStack() },
+        onLogoutClick = {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Login.route) {
+                    inclusive = true
+                }
+            }
+        },
+        bitmap = viewModel.bitmap
+    )
+}
 
-    val bitmap = Bitmap.createBitmap(emptyArray, 4, 4, Bitmap.Config.ARGB_8888)
-
+@Composable
+fun MessageThreadContent(
+    onBackClick: () -> Unit,
+    onLogoutClick: () -> Unit,
+    bitmap: Bitmap
+) {
     // Context for the toast.
     val context = LocalContext.current
 
@@ -49,7 +59,7 @@ fun MessageThreadScreen(navController: NavController) {
 
         // Back button.
         Button(
-            onClick = { navController.popBackStack() },
+            onClick = { onBackClick() },
             modifier = Modifier.padding(start = 16.dp)
         ) {
             Text(text = "Back")
@@ -58,11 +68,7 @@ fun MessageThreadScreen(navController: NavController) {
         // Logout button.
         Button(
             onClick = {
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Login.route) {
-                        inclusive = true
-                    }
-                }
+                onLogoutClick()
             },
             modifier = Modifier.padding(start = 16.dp)
         ) {
@@ -74,10 +80,7 @@ fun MessageThreadScreen(navController: NavController) {
         ) {
             BitmapImage(bitmap = bitmap, "BITMAP, YAY!!!")
         }
-
-
     }
-
 }
 
 /**

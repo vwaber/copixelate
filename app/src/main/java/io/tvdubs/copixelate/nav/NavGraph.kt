@@ -1,6 +1,7 @@
 package io.tvdubs.copixelate.nav
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,10 +9,12 @@ import io.tvdubs.copixelate.ui.LoginScreen
 import io.tvdubs.copixelate.ui.MessageThreadScreen
 import io.tvdubs.copixelate.ui.MessagesScreen
 import io.tvdubs.copixelate.ui.RegistrationScreen
+import io.tvdubs.copixelate.viewmodel.AppViewModel
 
 @Composable
 fun SetupNavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    appViewModel: AppViewModel = viewModel()
 ) {
     NavHost(
         navController = navController,
@@ -38,7 +41,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.MessageThread.route
         ) {
-            MessageThreadScreen(navController = navController)
+            MessageThreadScreen(navController = navController, viewModel = appViewModel)
         }
     }
 }
