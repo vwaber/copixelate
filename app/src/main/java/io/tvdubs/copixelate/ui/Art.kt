@@ -2,21 +2,40 @@ package io.tvdubs.copixelate.ui
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import io.tvdubs.copixelate.viewmodel.AppViewModel
 
 @Composable
 fun ArtScreen(viewModel: AppViewModel) {
-    Surface(
-        modifier = Modifier.fillMaxSize()
+
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        BitmapImage(bitmap = viewModel.bitmap, "BITMAP, YAY!!!")
+
+        BitmapImage(
+            bitmap = viewModel.drawing.drawingBitmap,
+            contentDescription = "BITMAP, YAY!!!",
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.FillWidth
+        )
+        BitmapImage(
+            bitmap = viewModel.drawing.paletteBitmap,
+            contentDescription = "BITMAP, YAY!!!",
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.FillWidth
+        )
+
     }
+
 }
 
 /**
@@ -28,11 +47,15 @@ fun ArtScreen(viewModel: AppViewModel) {
 @Composable
 fun BitmapImage(
     bitmap: Bitmap,
-    contentDescription: String
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale
 ) {
     Image(
         bitmap = bitmap.asImageBitmap(),
         contentDescription = contentDescription,
-        filterQuality = FilterQuality.None
+        filterQuality = FilterQuality.None,
+        modifier = modifier,
+        contentScale = contentScale
     )
 }
