@@ -74,8 +74,10 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) {
-                    SetupNavGraph(navController = navController)
-                    Modifier.padding(it)
+                    //Account for bottom nav bar height
+                    Surface(Modifier.padding(it)) {
+                        SetupNavGraph(navController = navController)
+                    }
                 }
             }
         }
