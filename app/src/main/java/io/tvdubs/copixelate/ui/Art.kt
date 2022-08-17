@@ -1,20 +1,29 @@
 package io.tvdubs.copixelate.ui
 
 import android.graphics.Bitmap
+import android.graphics.Point
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import io.tvdubs.copixelate.viewmodel.AppViewModel
+import androidx.compose.ui.layout.onGloballyPositioned
+import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 @Composable
-fun ArtScreen(viewModel: AppViewModel) {
+fun ArtScreen(viewModel: ArtViewModel) {
+
+    val viewState by viewModel.stateFlow.collectAsState()
 
     Column(
         Modifier.fillMaxSize(),
@@ -22,16 +31,32 @@ fun ArtScreen(viewModel: AppViewModel) {
     ) {
 
         BitmapImage(
-            bitmap = viewModel.drawing.drawingBitmap,
-            contentDescription = "BITMAP, YAY!!!",
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth
+            bitmap = viewState.drawingBitmap,
+            contentDescription = "Drawing",
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    detectDragGestures { change, _ ->
+                        viewModel.updatePixel(change.position, 0)
+                    }
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            viewModel.updatePixel(offset, 0)
+                        }
+                    )
+                }
+                .onGloballyPositioned {
+                    viewModel.viewSize = Point(it.size.width, it.size.height)
+                }
         )
         BitmapImage(
-            bitmap = viewModel.drawing.paletteBitmap,
-            contentDescription = "BITMAP, YAY!!!",
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth
+            bitmap = viewState.paletteBitmap,
+            contentDescription = "Drawing palette",
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.fillMaxWidth()
         )
 
     }

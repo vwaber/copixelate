@@ -6,12 +6,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.tvdubs.copixelate.ui.*
-import io.tvdubs.copixelate.viewmodel.AppViewModel
+import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
-    appViewModel: AppViewModel = viewModel()
+    artViewModel: ArtViewModel = viewModel()
 ) {
     NavHost(
         navController = navController,
@@ -20,7 +20,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.Art.route
         ) {
-            ArtScreen(viewModel = appViewModel)
+            ArtScreen(viewModel = artViewModel)
         }
 
         composable(
