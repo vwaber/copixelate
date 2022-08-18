@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "664046234595",
+    "firebase_url": "https://copixelate-89c3f-default-rtdb.firebaseio.com",
+    "project_id": "copixelate-89c3f",
+    "storage_bucket": "copixelate-89c3f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664046234595:android:4d74eb5f53b5133a12ced6",
+        "android_client_info": {
+          "package_name": "io.tvdubs.copixelate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "664046234595-fc1qsrh9ktq4dsf28svfb9m5ouuln1p4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.tvdubs.copixelate",
+            "certificate_hash": "e1deece2417f1520f495bca0dea5f617adcf4af4"
+          }
+        },
+        {
+          "client_id": "664046234595-3cittavel45b3ej413pms4fe477ps2dq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYCSA2y5SjQF9S22_fdQT_H24f3MB5tl4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "664046234595-3cittavel45b3ej413pms4fe477ps2dq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
