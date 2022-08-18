@@ -36,27 +36,38 @@ fun ArtScreen(viewModel: ArtViewModel) {
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .fillMaxWidth()
+                .onGloballyPositioned {
+                    viewModel.pixelMapViewSize = Point(it.size.width, it.size.height)
+                }
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
-                        viewModel.updatePixel(change.position, 0)
+                        viewModel.updatePixelMap(change.position)
                     }
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = { offset ->
-                            viewModel.updatePixel(offset, 0)
+                            viewModel.updatePixelMap(offset)
                         }
                     )
-                }
-                .onGloballyPositioned {
-                    viewModel.viewSize = Point(it.size.width, it.size.height)
                 }
         )
         BitmapImage(
             bitmap = viewState.palette.bitmap,
             contentDescription = "Drawing palette",
             contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    viewModel.paletteViewSize = Point(it.size.width, it.size.height)
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            viewModel.updatePalette(offset)
+                        }
+                    )
+                }
         )
 
     }
@@ -74,7 +85,7 @@ fun BitmapImage(
     bitmap: Bitmap,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale
+    contentScale: ContentScale = ContentScale.Fit
 ) {
     Image(
         bitmap = bitmap.asImageBitmap(),
