@@ -20,13 +20,21 @@ const val PALETTE_SIZE = 12
 
 class ArtViewModel : ViewModel() {
 
+    private val randomDrawing = ArrayList(IntArray(DRAWING_SIZE * DRAWING_SIZE) {
+        (1 until PALETTE_SIZE).random(Random(System.nanoTime()))
+    }.asList())
+
+    private val randomPalette =
+        ArrayList(IntArray(PALETTE_SIZE) { Random(System.nanoTime()).nextInt() }.asList())
+
+    private val paletteSize = Point(PALETTE_SIZE / 2, 2)
+    private val drawingSize = Point(DRAWING_SIZE, DRAWING_SIZE)
+
     private val _stateFlow = MutableStateFlow(
         PixelMap(
-            Point(DRAWING_SIZE, DRAWING_SIZE),
-            ArrayList(IntArray(DRAWING_SIZE * DRAWING_SIZE) {
-                (1 until PALETTE_SIZE).random(Random(System.nanoTime()))
-            }.asList()),
-            ArrayList(IntArray(PALETTE_SIZE) { Random(System.nanoTime()).nextInt() }.asList())
+            drawingSize,
+            randomDrawing,
+            Palette(paletteSize, randomPalette)
         )
     )
 
@@ -55,28 +63,45 @@ class ArtViewModel : ViewModel() {
 
 }
 
+private fun toBitmap(size: Point, pixels: ArrayList<Int>): Bitmap {
+    return Bitmap.createBitmap(
+        pixels.toIntArray(),
+        size.x,
+        size.y,
+        Bitmap.Config.RGB_565
+    )
+}
+
+data class Palette(
+    val size: Point,
+    val pixels: ArrayList<Int>,
+) {
+
+    val bitmap get() = toBitmap()
+
+    private fun toBitmap(palette: Palette = this) =
+        toBitmap(palette.size, palette.pixels)
+
+}
+
 data class PixelMap(
     val size: Point,
     val pixels: ArrayList<Int>,
-    val palette: ArrayList<Int>,
+    val palette: Palette,
 ) {
 
-    val drawingBitmap get() = toBitmap()
-    val paletteBitmap get() = toBitmapFromPalette()
+    val bitmap get() = toBitmap()
 
-    private fun toBitmap(pixelMap: PixelMap = this.applyPalette()): Bitmap {
-        return Bitmap.createBitmap(
-            pixelMap.pixels.toIntArray(),
-            pixelMap.size.x,
-            pixelMap.size.y,
-            Bitmap.Config.RGB_565
-        )
+    private fun toBitmap(pixelMap: PixelMap = this, palette: Palette = this.palette): Bitmap {
+        val newPixelMap = applyPaletteToPixelMap(palette, pixelMap)
+        return toBitmap(newPixelMap.size, newPixelMap.pixels)
     }
 
-    private fun toBitmapFromPalette() =
-        toBitmap(
-            PixelMap(Point(PALETTE_SIZE / 2, 2), palette, ArrayList())
-        )
+    private fun applyPaletteToPixelMap(palette: Palette, pixelMap: PixelMap): PixelMap =
+        pixelMap.copy(pixels = pixels.applyPaletteToArrayList(palette))
+
+    private fun ArrayList<Int>.applyPaletteToArrayList(palette: Palette) =
+        map { palette.pixels[it] } as ArrayList<Int>
 
     fun updatePixel(
         pixelMap: PixelMap = this,
@@ -84,7 +109,7 @@ data class PixelMap(
         paletteIndex: Int
     ): Result<PixelMap> {
 
-        position.toIndex(pixelMap.size).fold({
+        position.toIndexFromPoint(pixelMap.size).fold({
             return success(
                 copy(pixels =
                 ArrayList(pixels).apply { this[it] = paletteIndex })
@@ -93,15 +118,7 @@ data class PixelMap(
 
     }
 
-    private fun applyPalette(pixelMap: PixelMap = this): PixelMap {
-        return pixelMap.copy(pixels = pixels.applyPalette())
-    }
-
-    private fun ArrayList<Int>.applyPalette(palette: ArrayList<Int> = this@PixelMap.palette) =
-
-        map { palette[it] } as ArrayList<Int>
-
-    private fun Offset.toIndex(bounds: Point): Result<Int> =
+    private fun Offset.toIndexFromPoint(bounds: Point): Result<Int> =
         if (x < 0 || x > bounds.x || y < 0 || y > bounds.y)
             failure(IndexOutOfBoundsException("Pixel update position exceeds PixelMap bounds"))
         else

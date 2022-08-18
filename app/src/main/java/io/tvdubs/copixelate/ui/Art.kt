@@ -31,7 +31,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
     ) {
 
         BitmapImage(
-            bitmap = viewState.drawingBitmap,
+            bitmap = viewState.bitmap,
             contentDescription = "Drawing",
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
@@ -53,7 +53,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
                 }
         )
         BitmapImage(
-            bitmap = viewState.paletteBitmap,
+            bitmap = viewState.palette.bitmap,
             contentDescription = "Drawing palette",
             contentScale = ContentScale.FillWidth,
             modifier = Modifier.fillMaxWidth()
