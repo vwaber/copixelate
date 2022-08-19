@@ -1,20 +1,29 @@
 package io.tvdubs.copixelate.ui
 
 import android.graphics.Bitmap
+import android.graphics.Point
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import io.tvdubs.copixelate.viewmodel.AppViewModel
+import androidx.compose.ui.layout.onGloballyPositioned
+import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 @Composable
-fun ArtScreen(viewModel: AppViewModel) {
+fun ArtScreen(viewModel: ArtViewModel) {
+
+    val viewState by viewModel.stateFlow.collectAsState()
 
     Column(
         Modifier.fillMaxSize(),
@@ -22,16 +31,43 @@ fun ArtScreen(viewModel: AppViewModel) {
     ) {
 
         BitmapImage(
-            bitmap = viewModel.drawing.drawingBitmap,
-            contentDescription = "BITMAP, YAY!!!",
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth
+            bitmap = viewState.bitmap,
+            contentDescription = "Drawing",
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    viewModel.pixelMapViewSize = Point(it.size.width, it.size.height)
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, _ ->
+                        viewModel.updatePixelMap(change.position)
+                    }
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            viewModel.updatePixelMap(offset)
+                        }
+                    )
+                }
         )
         BitmapImage(
-            bitmap = viewModel.drawing.paletteBitmap,
-            contentDescription = "BITMAP, YAY!!!",
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth
+            bitmap = viewState.palette.bitmap,
+            contentDescription = "Drawing palette",
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    viewModel.paletteViewSize = Point(it.size.width, it.size.height)
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            viewModel.updatePalette(offset)
+                        }
+                    )
+                }
         )
 
     }
@@ -49,7 +85,7 @@ fun BitmapImage(
     bitmap: Bitmap,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale
+    contentScale: ContentScale = ContentScale.Fit
 ) {
     Image(
         bitmap = bitmap.asImageBitmap(),
