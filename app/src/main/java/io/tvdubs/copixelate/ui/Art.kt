@@ -5,14 +5,13 @@ import android.graphics.Point
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
@@ -33,7 +32,6 @@ fun ArtScreen(viewModel: ArtViewModel) {
         BitmapImage(
             bitmap = viewState.bitmap,
             contentDescription = "Drawing",
-            contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned {
@@ -52,23 +50,32 @@ fun ArtScreen(viewModel: ArtViewModel) {
                     )
                 }
         )
-        BitmapImage(
-            bitmap = viewState.palette.bitmap,
-            contentDescription = "Drawing palette",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .fillMaxWidth()
-                .onGloballyPositioned {
-                    viewModel.paletteViewSize = Point(it.size.width, it.size.height)
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { offset ->
-                            viewModel.updatePalette(offset)
-                        }
-                    )
-                }
-        )
+
+        Box(contentAlignment = Alignment.Center) {
+            BitmapImage(
+                bitmap = viewState.palette.borderBitmap,
+                contentDescription = "Drawing palette border",
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            BitmapImage(
+                bitmap = viewState.palette.bitmap,
+                contentDescription = "Drawing palette",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .scale(1f, 0.85f)
+                    .onGloballyPositioned {
+                        viewModel.paletteViewSize = Point(it.size.width, it.size.height)
+                    }
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = { offset ->
+                                viewModel.updatePalette(offset)
+                            }
+                        )
+                    }
+            )
+        }
 
     }
 
@@ -85,7 +92,7 @@ fun BitmapImage(
     bitmap: Bitmap,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Fit
+    contentScale: ContentScale = ContentScale.FillWidth
 ) {
     Image(
         bitmap = bitmap.asImageBitmap(),

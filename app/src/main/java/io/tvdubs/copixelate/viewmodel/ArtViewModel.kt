@@ -48,8 +48,6 @@ class ArtViewModel : ViewModel() {
 
         val scaleRatioX = stateFlow.value.palette.size.x.toFloat() / paletteViewSize.x
         val scaleRatioY = stateFlow.value.palette.size.y.toFloat() / paletteViewSize.y
-        Log.i("RATIOX", scaleRatioX.toString())
-        Log.i("RATIOX", scaleRatioX.toString())
         val scaledPosition = Offset(position.x * scaleRatioX, position.y * scaleRatioY)
 
         stateFlow.value.palette.updateCurrentIndex(position = scaledPosition).fold({ newPalette ->
@@ -63,7 +61,7 @@ class ArtViewModel : ViewModel() {
     fun updatePixelMap(position: Offset) {
 
         val scaleRatioX = stateFlow.value.size.x.toFloat() / pixelMapViewSize.x
-        val scaleRatioY = stateFlow.value.size.x.toFloat() / pixelMapViewSize.x
+        val scaleRatioY = stateFlow.value.size.y.toFloat() / pixelMapViewSize.y
         val scaledPosition = Offset(position.x * scaleRatioX, position.y * scaleRatioY)
 
         stateFlow.value.updatePixel(position = scaledPosition)
@@ -77,9 +75,11 @@ class ArtViewModel : ViewModel() {
 
 }
 
-private fun toBitmap(size: Point, pixels: ArrayList<Int>): Bitmap {
+private fun toBitmap(size: Point, pixels: ArrayList<Int>) = toBitmap(size, pixels.toIntArray())
+
+private fun toBitmap(size: Point, pixels: IntArray): Bitmap {
     return Bitmap.createBitmap(
-        pixels.toIntArray(),
+        pixels,
         size.x,
         size.y,
         Bitmap.Config.RGB_565
@@ -93,6 +93,9 @@ data class Palette(
 ) {
 
     val bitmap get() = toBitmap()
+    val borderBitmap: Bitmap get() = toBitmap(size, IntArray(pixels.size) { currentColor })
+
+    private val currentColor: Int get() = pixels[currentIndex]
 
     private fun toBitmap(palette: Palette = this) =
         toBitmap(palette.size, palette.pixels)
