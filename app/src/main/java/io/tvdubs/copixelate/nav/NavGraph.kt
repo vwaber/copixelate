@@ -7,11 +7,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.tvdubs.copixelate.ui.*
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
+import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
-    artViewModel: ArtViewModel = viewModel()
+    artViewModel: ArtViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
     NavHost(
         navController = navController,
@@ -26,13 +28,13 @@ fun SetupNavGraph(
         composable(
             route = Screen.Login.route
         ) {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, viewModel = userViewModel)
         }
 
         composable(
             route = Screen.Registration.route
         ) {
-            RegistrationScreen(navController = navController)
+            RegistrationScreen(navController = navController, viewModel = userViewModel)
         }
 
         composable(
