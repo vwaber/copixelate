@@ -9,22 +9,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
-fun MessagesScreen(navController: NavController) {
+fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
 
     MessagesScreenContent(
         clickMessageThread = { navController.navigate(Screen.MessageThread.route) },
-        onBackClick = {  navController.popBackStack() }
+        onLogoutClick = {
+            viewModel.logout()
+            navController.navigate(Screen.Art.route)
+        },
+        username = viewModel.auth.currentUser?.displayName
     )
 }
 
 @Composable
 fun MessagesScreenContent(
     clickMessageThread: () -> Unit,
-    onBackClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    username: String?
 ) {
     Column {
+        Text(text = "Hello, $username")
+
         // Button for advancing to the message thread for the specified user.
         Button(
             onClick = { clickMessageThread() },
@@ -35,7 +43,7 @@ fun MessagesScreenContent(
 
         // Button for logging the user out.
         Button(
-            onClick = { onBackClick() },
+            onClick = { onLogoutClick() },
             modifier = Modifier.padding(start = 16.dp)
         ) {
             Text(text = "Logout")
