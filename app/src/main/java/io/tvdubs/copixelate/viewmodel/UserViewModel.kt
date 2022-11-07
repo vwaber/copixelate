@@ -24,11 +24,9 @@ class UserViewModel : ViewModel() {
     private val _confirmPasswordText: MutableLiveData<String> = MutableLiveData("")
     val confirmPasswordText: LiveData<String> = _confirmPasswordText
 
-    // The current user account retrieved from Firebase
-    private var user: FirebaseUser? = null
 
     // Initialize instance of authorization.
-    private var auth: FirebaseAuth = Firebase.auth
+    var auth: FirebaseAuth = Firebase.auth
 
     // Update text field values.
     fun updateTextFieldText(text: String, enum: Enum<TextField>) {
@@ -50,7 +48,6 @@ class UserViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    user = auth.currentUser
                     Log.i("registration", "successful")
                 } else {
                     Log.i("registration", "failed: ${task.exception}")
@@ -68,7 +65,6 @@ class UserViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    user = auth.currentUser
                     Log.i("login", "successful")
 
                 } else {
@@ -80,5 +76,9 @@ class UserViewModel : ViewModel() {
                     updateTextFieldText("", enum)
                 }
             }
+    }
+
+    fun logout() {
+        auth.signOut()
     }
 }
