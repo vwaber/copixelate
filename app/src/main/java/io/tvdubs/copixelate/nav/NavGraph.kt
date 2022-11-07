@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.firebase.auth.FirebaseAuth
 import io.tvdubs.copixelate.ui.*
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 import io.tvdubs.copixelate.viewmodel.UserViewModel
@@ -40,13 +41,22 @@ fun SetupNavGraph(
         composable(
             route = Screen.Messages.route
         ) {
-            MessagesScreen(navController = navController)
+            // Navigation doesn't function right if the instance from viewModel is called
+            if (userViewModel.auth.currentUser == null) {
+                LoginScreen(navController = navController, viewModel = userViewModel)
+            } else {
+                MessagesScreen(navController = navController, viewModel = userViewModel)
+            }
         }
 
         composable(
             route = Screen.MessageThread.route
         ) {
-            MessageThreadScreen(navController = navController)
+            if (userViewModel.auth.currentUser == null) {
+                LoginScreen(navController = navController, viewModel = userViewModel)
+            } else {
+                MessageThreadScreen(navController = navController)
+            }
         }
     }
 }
