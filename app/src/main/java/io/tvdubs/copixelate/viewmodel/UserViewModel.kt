@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import io.tvdubs.copixelate.data.TextField
@@ -24,6 +24,8 @@ class UserViewModel : ViewModel() {
     private val _confirmPasswordText: MutableLiveData<String> = MutableLiveData("")
     val confirmPasswordText: LiveData<String> = _confirmPasswordText
 
+    private val _userUsernameText: MutableLiveData<String> = MutableLiveData("")
+    val userUsernameText: LiveData<String> = _userUsernameText
 
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
@@ -37,18 +39,27 @@ class UserViewModel : ViewModel() {
             TextField.USER_PASSWORD -> {
                 _passwordText.value = text
             }
+            TextField.USER_USERNAME -> {
+                _userUsernameText.value = text
+            }
             else -> {
                 _confirmPasswordText.value = text
             }
         }
     }
 
-    fun newUser(email: String, password: String) {
+    fun registerUserEmail(email: String, password: String) {
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("registration", "successful")
+                    auth.currentUser?.updateProfile(
+                        UserProfileChangeRequest
+                            .Builder()
+                            .setDisplayName(userUsernameText.value.toString())
+                            .build()
+                    )
                 } else {
                     Log.i("registration", "failed: ${task.exception}")
                 }

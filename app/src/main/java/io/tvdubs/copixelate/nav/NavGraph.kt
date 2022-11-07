@@ -41,7 +41,6 @@ fun SetupNavGraph(
         composable(
             route = Screen.Messages.route
         ) {
-            // Navigation doesn't function right if the instance from viewModel is called
             if (userViewModel.auth.currentUser == null) {
                 LoginScreen(navController = navController, viewModel = userViewModel)
             } else {
