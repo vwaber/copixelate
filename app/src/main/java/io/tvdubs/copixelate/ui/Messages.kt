@@ -12,10 +12,22 @@ import io.tvdubs.copixelate.nav.Screen
 
 @Composable
 fun MessagesScreen(navController: NavController) {
+
+    MessagesScreenContent(
+        clickMessageThread = { navController.navigate(Screen.MessageThread.route) },
+        onBackClick = {  navController.popBackStack() }
+    )
+}
+
+@Composable
+fun MessagesScreenContent(
+    clickMessageThread: () -> Unit,
+    onBackClick: () -> Unit
+) {
     Column {
         // Button for advancing to the message thread for the specified user.
         Button(
-            onClick = { navController.navigate(Screen.MessageThread.route) },
+            onClick = { clickMessageThread() },
             modifier = Modifier.padding(start = 16.dp)
         ) {
             Text(text = "Message 'Username'")
@@ -23,7 +35,7 @@ fun MessagesScreen(navController: NavController) {
 
         // Button for logging the user out.
         Button(
-            onClick = { navController.popBackStack() },
+            onClick = { onBackClick() },
             modifier = Modifier.padding(start = 16.dp)
         ) {
             Text(text = "Logout")
