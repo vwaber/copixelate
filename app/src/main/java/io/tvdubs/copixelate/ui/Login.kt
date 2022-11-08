@@ -27,7 +27,13 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
     val userEmailText: String by viewModel.userEmailText.observeAsState(initial = "")
     val userPasswordText: String by viewModel.passwordText.observeAsState(initial = "")
 
+    val singedInStatus: Boolean by viewModel.singedIn.observeAsState(initial = false)
+
     val context = LocalContext.current
+
+    if (singedInStatus) {
+        navController.navigate(Screen.Messages.route)
+    }
 
     LoginScreenContent(
         userEmail = userEmailText,
@@ -40,9 +46,7 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
             } else if (userPasswordText == "") {
                 Toast.makeText(context, "Enter Password.", Toast.LENGTH_LONG).show()
             } else {
-                // ToDo: Bug with screen refreshing before sign in completion.
                 viewModel.signIn(userEmailText, userPasswordText)
-                navController.navigate(Screen.Messages.route)
             }
         },
         onRegistrationClick = {
@@ -77,6 +81,7 @@ fun LoginScreenContent(
                 .padding(horizontal = 16.dp, vertical = 2.dp)
         )
 
+        // Todo: Add trailing icon to toggle password visibility
         OutlinedTextField(
             value = userPassword,
             onValueChange = onUserPasswordChange,

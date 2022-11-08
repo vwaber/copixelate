@@ -27,6 +27,9 @@ class UserViewModel : ViewModel() {
     private val _userUsernameText: MutableLiveData<String> = MutableLiveData("")
     val userUsernameText: LiveData<String> = _userUsernameText
 
+    private val _signedIn: MutableLiveData<Boolean> = MutableLiveData()
+    val singedIn: LiveData<Boolean> = _signedIn
+
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
 
@@ -54,6 +57,7 @@ class UserViewModel : ViewModel() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("registration", "successful")
+                    // Todo: require user name.
                     auth.currentUser?.updateProfile(
                         UserProfileChangeRequest
                             .Builder()
@@ -76,8 +80,8 @@ class UserViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    changeSignInStatus(true)
                     Log.i("login", "successful")
-
                 } else {
                     Log.i("login", "failed: ${task.exception}")
                 }
@@ -90,6 +94,12 @@ class UserViewModel : ViewModel() {
     }
 
     fun logout() {
+        changeSignInStatus(false)
         auth.signOut()
     }
+
+    fun changeSignInStatus(status: Boolean) {
+        _signedIn.value = status
+    }
+
 }
