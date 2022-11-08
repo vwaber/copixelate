@@ -5,7 +5,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.google.firebase.auth.FirebaseAuth
 import io.tvdubs.copixelate.ui.*
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 import io.tvdubs.copixelate.viewmodel.UserViewModel
@@ -27,12 +26,6 @@ fun SetupNavGraph(
         }
 
         composable(
-            route = Screen.Login.route
-        ) {
-            LoginScreen(navController = navController, viewModel = userViewModel)
-        }
-
-        composable(
             route = Screen.Registration.route
         ) {
             RegistrationScreen(navController = navController, viewModel = userViewModel)
@@ -42,8 +35,14 @@ fun SetupNavGraph(
             route = Screen.Messages.route
         ) {
             if (userViewModel.auth.currentUser == null) {
+                userViewModel.changeSignInStatus(false)
                 LoginScreen(navController = navController, viewModel = userViewModel)
             } else {
+
+                if (userViewModel.singedIn.value != true) {
+                    userViewModel.changeSignInStatus(true)
+                }
+
                 MessagesScreen(navController = navController, viewModel = userViewModel)
             }
         }
@@ -54,7 +53,7 @@ fun SetupNavGraph(
             if (userViewModel.auth.currentUser == null) {
                 LoginScreen(navController = navController, viewModel = userViewModel)
             } else {
-                MessageThreadScreen(navController = navController)
+                MessageThreadScreen(navController = navController, viewModel = userViewModel)
             }
         }
     }

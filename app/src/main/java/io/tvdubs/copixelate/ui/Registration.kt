@@ -32,14 +32,16 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
 
     RegistrationScreenContent(
         onRegistrationClick = {
-            if (confirmPassword == userPassword && userEmail != "" && userPassword != "") {
+            if (confirmPassword == userPassword && userEmail != "" && userPassword != "" && userUsername != "") {
                 viewModel.registerUserEmail(userEmail, userPassword)
-                navController.navigate(Screen.Login.route)
+                navController.navigate(Screen.Messages.route)
             } else {
                 if (userEmail == "") {
                     Toast.makeText(context, "Enter Email", Toast.LENGTH_LONG).show()
                 } else if (userPassword == "") {
                     Toast.makeText(context, "Enter Password", Toast.LENGTH_LONG).show()
+                } else if (userUsername == "") {
+                    Toast.makeText(context, "Enter Username", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_LONG).show()
                 }
@@ -52,7 +54,7 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
             }
         },
         onCancelClick = {
-            navController.navigate(Screen.Login.route)
+            navController.navigate(Screen.Messages.route)
             for (enum in TextField.values()) {
                 viewModel.updateTextFieldText("", enum)
             }
