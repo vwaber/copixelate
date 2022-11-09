@@ -1,20 +1,20 @@
 package io.tvdubs.copixelate.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -28,8 +28,8 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
     val userPassword: String by viewModel.passwordText.observeAsState("")
     val confirmPassword: String by viewModel.confirmPasswordText.observeAsState("")
     val userUsername: String by viewModel.userUsernameText.observeAsState("")
-
     val context = LocalContext.current
+    val passwordVisible: Boolean by viewModel.passwordVisible.observeAsState(initial = false)
 
     RegistrationScreenContent(
         onRegistrationClick = {
@@ -69,7 +69,9 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
         onEmailFieldTextChange = { viewModel.updateTextFieldText(it, TextField.USER_EMAIL) },
         onPasswordFieldTextChange = { viewModel.updateTextFieldText(it, TextField.USER_PASSWORD) },
         onConfirmPasswordFieldTextChange = { viewModel.updateTextFieldText(it, TextField.USER_CONFIRM_PASSWORD) },
-        onUsernameFieldTextChange = { viewModel.updateTextFieldText(it, TextField.USER_USERNAME) }
+        onUsernameFieldTextChange = { viewModel.updateTextFieldText(it, TextField.USER_USERNAME) },
+        passwordVisible = passwordVisible,
+        onShowPasswordClick = { viewModel.changePasswordVisibility() }
     )
 }
 
@@ -86,7 +88,9 @@ fun RegistrationScreenContent(
     onEmailFieldTextChange: (String) -> Unit,
     onPasswordFieldTextChange: (String) -> Unit,
     onConfirmPasswordFieldTextChange: (String) -> Unit,
-    onUsernameFieldTextChange: (String) -> Unit
+    onUsernameFieldTextChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onShowPasswordClick: () -> Unit
 ) {
     Column {
 
@@ -120,7 +124,22 @@ fun RegistrationScreenContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 2.dp),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = if (passwordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            trailingIcon = {
+                val image = if (passwordVisible) {
+                    Icons.Filled.Visibility
+                } else {
+                    Icons.Filled.VisibilityOff
+                }
+
+                IconButton(onClick = { onShowPasswordClick() }) {
+                    Icon(imageVector = image, null)
+                }
+            }
         )
 
         OutlinedTextField(
@@ -130,7 +149,22 @@ fun RegistrationScreenContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 2.dp),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = if (passwordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            trailingIcon = {
+                val image = if (passwordVisible) {
+                    Icons.Filled.Visibility
+                } else {
+                    Icons.Filled.VisibilityOff
+                }
+
+                IconButton(onClick = { onShowPasswordClick() }) {
+                    Icon(imageVector = image, null)
+                }
+            }
         )
 
         // Button for registering the user. Returns to login screen after completion.

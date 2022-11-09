@@ -34,6 +34,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.Messages.route
         ) {
+            userViewModel.changePasswordVisibility(false)
             if (userViewModel.auth.currentUser == null) {
                 userViewModel.changeSignInStatus(false)
                 LoginScreen(navController = navController, viewModel = userViewModel)
