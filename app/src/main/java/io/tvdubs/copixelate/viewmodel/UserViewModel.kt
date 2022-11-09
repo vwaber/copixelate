@@ -33,6 +33,9 @@ class UserViewModel : ViewModel() {
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
 
+    private val _passwordVisible: MutableLiveData<Boolean> = MutableLiveData(false)
+    val passwordVisible: LiveData<Boolean> = _passwordVisible
+
     // Update text field values.
     fun updateTextFieldText(text: String, enum: Enum<TextField>) {
         when (enum) {
@@ -100,6 +103,14 @@ class UserViewModel : ViewModel() {
 
     fun changeSignInStatus(status: Boolean) {
         _signedIn.value = status
+    }
+
+    fun changePasswordVisibility(visible: Boolean? = null) {
+        if (visible == null) {
+            _passwordVisible.value = !_passwordVisible.value!!
+        } else {
+            _passwordVisible.value = visible
+        }
     }
 
 }
