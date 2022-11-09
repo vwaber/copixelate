@@ -1,6 +1,7 @@
 package io.tvdubs.copixelate.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,7 +35,11 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
         onRegistrationClick = {
             if (confirmPassword == userPassword && userEmail != "" && userPassword != "" && userUsername != "") {
                 viewModel.registerUserEmail(userEmail, userPassword)
-                navController.navigate(Screen.Messages.route)
+                navController.navigate(Screen.Art.route) {
+                    popUpTo(Screen.Art.route) {
+                        inclusive = true
+                    }
+                }
             } else {
                 if (userEmail == "") {
                     Toast.makeText(context, "Enter Email", Toast.LENGTH_LONG).show()
@@ -45,16 +50,14 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
                 } else {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_LONG).show()
                 }
-
-                for (enum in TextField.values()) {
-                    if (enum != TextField.USER_EMAIL) {
-                        viewModel.updateTextFieldText("", enum)
-                    }
-                }
             }
         },
         onCancelClick = {
-            navController.navigate(Screen.Messages.route)
+            navController.navigate(Screen.Messages.route) {
+                popUpTo(Screen.Messages.route) {
+                    inclusive = true
+                }
+            }
             for (enum in TextField.values()) {
                 viewModel.updateTextFieldText("", enum)
             }

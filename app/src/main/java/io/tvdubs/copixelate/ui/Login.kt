@@ -32,7 +32,11 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
     val context = LocalContext.current
 
     if (singedInStatus) {
-        navController.navigate(Screen.Messages.route)
+        navController.navigate(Screen.Messages.route) {
+            popUpTo(Screen.Messages.route) {
+                inclusive = true
+            }
+        }
     }
 
     LoginScreenContent(
