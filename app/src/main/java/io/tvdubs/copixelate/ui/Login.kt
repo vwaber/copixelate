@@ -1,9 +1,9 @@
 package io.tvdubs.copixelate.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -46,11 +47,11 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
         onUserPasswordChange = { viewModel.updateTextFieldText(it, TextField.USER_PASSWORD) },
         onLoginClick = {
             if (userEmailText == "") {
-                Toast.makeText(context, "Enter Email.", Toast.LENGTH_LONG).show()
+                viewModel.toastMaker(context, "Enter Email").show()
             } else if (userPasswordText == "") {
-                Toast.makeText(context, "Enter Password.", Toast.LENGTH_LONG).show()
+                viewModel.toastMaker(context, "Enter Password").show()
             } else {
-                viewModel.signIn(userEmailText, userPasswordText)
+                viewModel.signIn(userEmailText, userPasswordText, context)
             }
         },
         onRegistrationClick = {
@@ -111,7 +112,8 @@ fun LoginScreenContent(
                 IconButton(onClick = { onShowPasswordClick() }) {
                     Icon(imageVector = image, null)
                 }
-            }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
         // Button for logging in user and navigating to messages screen.

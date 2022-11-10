@@ -1,6 +1,8 @@
 package io.tvdubs.copixelate.viewmodel
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -54,13 +56,12 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun registerUserEmail(email: String, password: String) {
+    fun registerUserEmail(email: String, password: String, context: Context) {
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("registration", "successful")
-                    // Todo: require user name.
                     auth.currentUser?.updateProfile(
                         UserProfileChangeRequest
                             .Builder()
@@ -69,6 +70,7 @@ class UserViewModel : ViewModel() {
                     )
                 } else {
                     Log.i("registration", "failed: ${task.exception}")
+                    toastMaker(context, "Registration Failed!").show()
                 }
 
                 // Resets values in text fields.
@@ -78,7 +80,7 @@ class UserViewModel : ViewModel() {
             }
     }
 
-    fun signIn(email: String, password: String) {
+    fun signIn(email: String, password: String, context: Context) {
 
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -87,6 +89,7 @@ class UserViewModel : ViewModel() {
                     Log.i("login", "successful")
                 } else {
                     Log.i("login", "failed: ${task.exception}")
+                    toastMaker(context, "Login Failed!").show()
                 }
 
                 // Resets all text fields.
@@ -111,6 +114,10 @@ class UserViewModel : ViewModel() {
         } else {
             _passwordVisible.value = visible
         }
+    }
+
+    fun toastMaker(context: Context, text: String): Toast {
+        return Toast.makeText(context, text, Toast.LENGTH_LONG)
     }
 
 }

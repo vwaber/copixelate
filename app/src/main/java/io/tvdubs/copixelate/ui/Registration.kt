@@ -1,9 +1,9 @@
 package io.tvdubs.copixelate.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +35,7 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
     RegistrationScreenContent(
         onRegistrationClick = {
             if (confirmPassword == userPassword && userEmail != "" && userPassword != "" && userUsername != "") {
-                viewModel.registerUserEmail(userEmail, userPassword)
+                viewModel.registerUserEmail(userEmail, userPassword, context)
                 navController.navigate(Screen.Art.route) {
                     popUpTo(Screen.Art.route) {
                         inclusive = true
@@ -42,13 +43,13 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
                 }
             } else {
                 if (userEmail == "") {
-                    Toast.makeText(context, "Enter Email", Toast.LENGTH_LONG).show()
+                    viewModel.toastMaker(context, "Enter Email").show()
                 } else if (userPassword == "") {
-                    Toast.makeText(context, "Enter Password", Toast.LENGTH_LONG).show()
+                    viewModel.toastMaker(context, "Enter Password").show()
                 } else if (userUsername == "") {
-                    Toast.makeText(context, "Enter Username", Toast.LENGTH_LONG).show()
+                    viewModel.toastMaker(context, "Enter Username").show()
                 } else {
-                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_LONG).show()
+                    viewModel.toastMaker(context, "Passwords do not match").show()
                 }
             }
         },
@@ -139,7 +140,8 @@ fun RegistrationScreenContent(
                 IconButton(onClick = { onShowPasswordClick() }) {
                     Icon(imageVector = image, null)
                 }
-            }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
         OutlinedTextField(
@@ -164,7 +166,8 @@ fun RegistrationScreenContent(
                 IconButton(onClick = { onShowPasswordClick() }) {
                     Icon(imageVector = image, null)
                 }
-            }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
         // Button for registering the user. Returns to login screen after completion.
