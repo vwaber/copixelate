@@ -11,11 +11,17 @@ private const val DEFAULT_DRAWING_HEIGHT = 24
 private const val DEFAULT_PALETTE_WIDTH = 6
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
-private operator fun PointF.times(f: Float): PointF = apply { x *= f; y *= f }
+private const val DEFAULT_BRUSH_SIZE = 1
+private val DEFAULT_BRUSH_STYLE = Brush.Style.SQUARE
+
+private operator fun PointF.times(f: Float) = PointF(f * x, f * y)
+private operator fun PointF.plus(p: PointF) = PointF(x + p.x, y + p.y)
 
 class ArtBoard {
 
-    private var drawing = createRandomDrawing(createRandomPalette())
+    private var drawing = createRandomDrawing(
+        createRandomPalette(), createDefaultBrush()
+    )
 
     val drawingBitmap get() = drawing.bitmap
     val paletteBitmap get() = drawing.palette.bitmap
@@ -26,7 +32,7 @@ class ArtBoard {
         val scale = drawing.size.x / viewSize.x.toFloat()
         val scaledPosition = viewInputPosition * scale
 
-        return drawing.updatePixel(scaledPosition)
+        return drawing.draw(scaledPosition)
     }
 
     fun updatePaletteActiveIndex(viewSize: Point, viewInputPosition: PointF): Result<Unit> {
@@ -47,25 +53,32 @@ class ArtBoard {
         return Palette(paletteSize, randomPixels)
     }
 
-    private fun createRandomDrawing(palette: Palette): Drawing {
+    private fun createRandomDrawing(palette: Palette, brush: Brush): Drawing {
 
         val randomPixels = IntArray(DEFAULT_DRAWING_WIDTH * DEFAULT_DRAWING_HEIGHT) {
             (1 until palette.colors.size).random(Random(System.nanoTime()))
         }
         val drawingSize = Point(DEFAULT_DRAWING_WIDTH, DEFAULT_DRAWING_HEIGHT)
 
-        return Drawing(drawingSize, randomPixels, palette)
+        return Drawing(drawingSize, randomPixels, palette, brush)
+    }
+
+    private fun createDefaultBrush(): Brush {
+        return Brush(DEFAULT_BRUSH_SIZE, DEFAULT_BRUSH_STYLE)
     }
 
 }
 
 private class Drawing(
-    var size: Point,
-    var pixels: IntArray,
-    var palette: Palette,
+    val size: Point,
+    private val pixels: IntArray,
+    val palette: Palette,
+    val brush: Brush,
 ) {
 
     val bitmap get() = toBitmap()
+
+    fun draw(p: PointF) = updatePixelsWithBrush(p)
 
     private fun toBitmap(palette: Palette = this.palette, drawing: Drawing = this): Bitmap =
         toBitmap(drawing.size, drawing.toColorPixels(palette, drawing))
@@ -73,17 +86,65 @@ private class Drawing(
     private fun toColorPixels(palette: Palette, drawing: Drawing): IntArray =
         IntArray(drawing.pixels.size) { palette.colors[drawing.pixels[it]] }
 
-    fun updatePixel(
+    private fun updatePixelsWithBrush(
         position: PointF,
         paletteIndex: Int = palette.activeIndex,
         drawing: Drawing = this,
     ): Result<Unit> =
         position.toIndex(drawing.size).fold({
-            drawing.pixels[it] = paletteIndex
+
+            brush.bristles.forEach { bristle ->
+                (position + bristle).toIndex(drawing.size).onSuccess { index ->
+                    drawing.pixels[index] = paletteIndex
+                }
+            }
+
             Result.success(Unit)
         }, {
             Result.failure(it)
         })
+
+}
+
+
+private class Brush(size: Int, style: Style) {
+
+    enum class Style(val dynamic: Boolean) {
+        SQUARE(false),
+        ROUND(false),
+        SNOW(true)
+    }
+
+    private val _bristles = ArrayList<PointF>()
+    val bristles: List<PointF> = _bristles
+
+    var size = size
+        set(value) = createBrush(value, style)
+    var style = style
+        set(value) = createBrush(size, value)
+
+    init {
+        createBrush(size, style)
+    }
+
+    private fun createBrush(size: Int, shape: Style) {
+        _bristles.clear()
+        _bristles.addAll(
+            when (shape) {
+                Style.SQUARE -> createSquareBrush(size)
+                else -> createSquareBrush(size)
+            }
+        )
+    }
+
+    private fun createSquareBrush(size: Int) =
+        ArrayList<PointF>().apply {
+            for (x in 0..size) {
+                for (y in 0..size) {
+                    add(PointF(x - (size / 2f), y - (size / 2f)))
+                }
+            }
+        }
 
 }
 
