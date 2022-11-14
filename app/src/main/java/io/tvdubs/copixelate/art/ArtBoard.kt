@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.PointF
 import kotlin.math.floor
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 private const val DEFAULT_DRAWING_WIDTH = 24
@@ -11,8 +12,8 @@ private const val DEFAULT_DRAWING_HEIGHT = 24
 private const val DEFAULT_PALETTE_WIDTH = 6
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
-private const val DEFAULT_BRUSH_SIZE = 1
-private val DEFAULT_BRUSH_STYLE = Brush.Style.SQUARE
+private const val DEFAULT_BRUSH_SIZE = 5
+private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
 private operator fun PointF.times(f: Float) = PointF(f * x, f * y)
 private operator fun PointF.plus(p: PointF) = PointF(x + p.x, y + p.y)
@@ -111,7 +112,7 @@ private class Brush(size: Int, style: Style) {
 
     enum class Style(val dynamic: Boolean) {
         SQUARE(false),
-        ROUND(false),
+        CIRCLE(false),
         SNOW(true)
     }
 
@@ -132,6 +133,7 @@ private class Brush(size: Int, style: Style) {
         _bristles.addAll(
             when (shape) {
                 Style.SQUARE -> createSquareBrush(size)
+                Style.CIRCLE -> createCircleBrush(size)
                 else -> createSquareBrush(size)
             }
         )
@@ -146,6 +148,19 @@ private class Brush(size: Int, style: Style) {
             }
         }
 
+    private fun createCircleBrush(size: Int) =
+        ArrayList<PointF>().apply {
+                for (x in 0 until size) {
+                    for (y in 0 until size) {
+                        if (sqrt(((x * x) + (y * y)).toDouble()) <= size - 1) {
+                            add(PointF(x.toFloat(), y.toFloat()))
+                            add(PointF(-x.toFloat(), y.toFloat()))
+                            add(PointF(-x.toFloat(), -y.toFloat()))
+                            add(PointF(x.toFloat(), -y.toFloat()))
+                        }
+                    }
+            }
+        }
 }
 
 private class Palette(
