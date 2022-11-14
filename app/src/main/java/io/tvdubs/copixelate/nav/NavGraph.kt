@@ -26,12 +26,6 @@ fun SetupNavGraph(
         }
 
         composable(
-            route = Screen.Login.route
-        ) {
-            LoginScreen(navController = navController, viewModel = userViewModel)
-        }
-
-        composable(
             route = Screen.Registration.route
         ) {
             RegistrationScreen(navController = navController, viewModel = userViewModel)
@@ -40,13 +34,28 @@ fun SetupNavGraph(
         composable(
             route = Screen.Messages.route
         ) {
-            MessagesScreen(navController = navController)
+            userViewModel.changePasswordVisibility(false)
+            if (userViewModel.auth.currentUser == null) {
+                userViewModel.changeSignInStatus(false)
+                LoginScreen(navController = navController, viewModel = userViewModel)
+            } else {
+
+                if (userViewModel.singedIn.value != true) {
+                    userViewModel.changeSignInStatus(true)
+                }
+
+                MessagesScreen(navController = navController, viewModel = userViewModel)
+            }
         }
 
         composable(
             route = Screen.MessageThread.route
         ) {
-            MessageThreadScreen(navController = navController)
+            if (userViewModel.auth.currentUser == null) {
+                LoginScreen(navController = navController, viewModel = userViewModel)
+            } else {
+                MessageThreadScreen(navController = navController, viewModel = userViewModel)
+            }
         }
     }
 }

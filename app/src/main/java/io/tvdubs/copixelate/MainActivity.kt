@@ -28,8 +28,7 @@ class MainActivity : ComponentActivity() {
 
         val navBarItems = listOf(
             Screen.Art,
-            Screen.MessageThread,
-            Screen.Login,
+            Screen.Messages
         )
 
         setContent {

@@ -1,11 +1,13 @@
 package io.tvdubs.copixelate.viewmodel
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import io.tvdubs.copixelate.data.TextField
@@ -24,11 +26,17 @@ class UserViewModel : ViewModel() {
     private val _confirmPasswordText: MutableLiveData<String> = MutableLiveData("")
     val confirmPasswordText: LiveData<String> = _confirmPasswordText
 
-    // The current user account retrieved from Firebase
-    private var user: FirebaseUser? = null
+    private val _userUsernameText: MutableLiveData<String> = MutableLiveData("")
+    val userUsernameText: LiveData<String> = _userUsernameText
+
+    private val _signedIn: MutableLiveData<Boolean> = MutableLiveData()
+    val singedIn: LiveData<Boolean> = _signedIn
 
     // Initialize instance of authorization.
-    private var auth: FirebaseAuth = Firebase.auth
+    var auth: FirebaseAuth = Firebase.auth
+
+    private val _passwordVisible: MutableLiveData<Boolean> = MutableLiveData(false)
+    val passwordVisible: LiveData<Boolean> = _passwordVisible
 
     // Update text field values.
     fun updateTextFieldText(text: String, enum: Enum<TextField>) {
@@ -39,21 +47,30 @@ class UserViewModel : ViewModel() {
             TextField.USER_PASSWORD -> {
                 _passwordText.value = text
             }
+            TextField.USER_USERNAME -> {
+                _userUsernameText.value = text
+            }
             else -> {
                 _confirmPasswordText.value = text
             }
         }
     }
 
-    fun newUser(email: String, password: String) {
+    fun registerUserEmail(email: String, password: String, context: Context) {
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    user = auth.currentUser
                     Log.i("registration", "successful")
+                    auth.currentUser?.updateProfile(
+                        UserProfileChangeRequest
+                            .Builder()
+                            .setDisplayName(userUsernameText.value.toString())
+                            .build()
+                    )
                 } else {
                     Log.i("registration", "failed: ${task.exception}")
+                    toastMaker(context, "Registration Failed!").show()
                 }
 
                 // Resets values in text fields.
@@ -63,16 +80,16 @@ class UserViewModel : ViewModel() {
             }
     }
 
-    fun signIn(email: String, password: String) {
+    fun signIn(email: String, password: String, context: Context) {
 
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    user = auth.currentUser
+                    changeSignInStatus(true)
                     Log.i("login", "successful")
-
                 } else {
                     Log.i("login", "failed: ${task.exception}")
+                    toastMaker(context, "Login Failed!").show()
                 }
 
                 // Resets all text fields.
@@ -81,4 +98,26 @@ class UserViewModel : ViewModel() {
                 }
             }
     }
+
+    fun logout() {
+        changeSignInStatus(false)
+        auth.signOut()
+    }
+
+    fun changeSignInStatus(status: Boolean) {
+        _signedIn.value = status
+    }
+
+    fun changePasswordVisibility(visible: Boolean? = null) {
+        if (visible == null) {
+            _passwordVisible.value = !_passwordVisible.value!!
+        } else {
+            _passwordVisible.value = visible
+        }
+    }
+
+    fun toastMaker(context: Context, text: String): Toast {
+        return Toast.makeText(context, text, Toast.LENGTH_LONG)
+    }
+
 }
