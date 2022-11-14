@@ -10,7 +10,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import io.tvdubs.copixelate.data.TextField
 
 class UserViewModel : ViewModel() {
 
@@ -120,4 +119,11 @@ class UserViewModel : ViewModel() {
         return Toast.makeText(context, text, Toast.LENGTH_LONG)
     }
 
+}
+
+enum class TextField {
+    USER_EMAIL,
+    USER_PASSWORD,
+    USER_CONFIRM_PASSWORD,
+    USER_USERNAME
 }

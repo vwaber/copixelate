@@ -19,8 +19,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import io.tvdubs.copixelate.data.TextField
 import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.viewmodel.TextField
 import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
