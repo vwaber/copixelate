@@ -6,10 +6,14 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
+import io.tvdubs.copixelate.data.User
+import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
 
@@ -31,11 +35,39 @@ class UserViewModel : ViewModel() {
     private val _signedIn: MutableLiveData<Boolean> = MutableLiveData()
     val singedIn: LiveData<Boolean> = _signedIn
 
+    private val _user: MutableLiveData<User?> = MutableLiveData()
+    val user: LiveData<User?> = _user
+
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
 
+    // Initialize instance of database
+    val database = FirebaseDatabase.getInstance()
+
     private val _passwordVisible: MutableLiveData<Boolean> = MutableLiveData(false)
     val passwordVisible: LiveData<Boolean> = _passwordVisible
+
+    init {
+        if (auth.currentUser != null) {
+            retrieveUserInfo()
+        }
+    }
+
+    private fun createUser() {
+        val userInfo = auth.currentUser
+        val ref = database.getReference("users")
+        val user = User(
+            username = userInfo?.displayName,
+            email = userInfo?.email,
+            contacts = mutableListOf(""),
+            artBoards = mutableListOf("")
+        )
+        viewModelScope.launch {
+            ref.child(userInfo?.uid.toString()).setValue(user).addOnCompleteListener {
+                _user.value = user
+            }
+        }
+    }
 
     // Update text field values.
     fun updateTextFieldText(text: String, enum: Enum<TextField>) {
@@ -66,7 +98,10 @@ class UserViewModel : ViewModel() {
                             .Builder()
                             .setDisplayName(userUsernameText.value.toString())
                             .build()
-                    )
+                    )?.addOnCompleteListener {
+                        createUser()
+                    }
+
                 } else {
                     Log.i("registration", "failed: ${task.exception}")
                     toastMaker(context, "Registration Failed!").show()
@@ -86,6 +121,8 @@ class UserViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     changeSignInStatus(true)
                     Log.i("login", "successful")
+                    retrieveUserInfo()
+
                 } else {
                     Log.i("login", "failed: ${task.exception}")
                     toastMaker(context, "Login Failed!").show()
@@ -95,6 +132,21 @@ class UserViewModel : ViewModel() {
                 for (enum in TextField.values()) {
                     updateTextFieldText("", enum)
                 }
+            }
+    }
+
+    fun retrieveUserInfo() {
+        database
+            .getReference("users")
+            .child(auth.currentUser?.uid.toString()).get()
+            .addOnSuccessListener {
+                _user.value = User(
+                    username = it.child("username").value.toString(),
+                    email = it.child("email").value.toString(),
+                    contacts = it.child("contacts").value as MutableList<String>?,
+                    artBoards = it.child("artBoards").value as MutableList<String>?
+                )
+                Log.i("user", "${_user.value}")
             }
     }
 

@@ -15,11 +15,17 @@ import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
 fun MessageThreadScreen(navController: NavController, viewModel: UserViewModel) {
+    val context = LocalContext.current
     MessageThreadContent(
         onBackClick = { navController.navigate(Screen.Messages.route) },
         onLogoutClick = {
             viewModel.logout()
             navController.navigate(Screen.Art.route)
+        },
+        onSendClick = {
+            Toast.makeText(context, "Message Sent!", Toast.LENGTH_LONG)
+                .show()
+//            viewModel.sendMessage()
         }
     )
 }
@@ -27,19 +33,16 @@ fun MessageThreadScreen(navController: NavController, viewModel: UserViewModel) 
 @Composable
 fun MessageThreadContent(
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onSendClick: () -> Unit
 ) {
-    // Context for the toast.
-    val context = LocalContext.current
-
     Column {
         Text(text = "Message with 'User'.")
 
         // Button for sending message.
         Button(
             onClick = {
-                Toast.makeText(context, "Message Sent!", Toast.LENGTH_LONG)
-                    .show()
+                onSendClick()
             },
             modifier = Modifier.padding(start = 16.dp)
         ) {
