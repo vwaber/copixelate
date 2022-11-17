@@ -12,7 +12,9 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
+import io.tvdubs.copixelate.data.Contact
 import io.tvdubs.copixelate.data.User
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
@@ -38,6 +40,12 @@ class UserViewModel : ViewModel() {
     private val _user: MutableLiveData<User?> = MutableLiveData()
     val user: LiveData<User?> = _user
 
+    private val _contactList: MutableLiveData<MutableList<Contact>> = MutableLiveData(mutableListOf())
+    val contactList: LiveData<MutableList<Contact>> = _contactList
+
+    private val _searchString: MutableLiveData<String> = MutableLiveData("")
+    val searchString: LiveData<String> = _searchString
+
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
 
@@ -55,23 +63,18 @@ class UserViewModel : ViewModel() {
 
     private fun createUser() {
         val userInfo = auth.currentUser
-        val userRef = database.getReference("users")
         val usernameRef = database.getReference("usernames")
         val user = User(
-            username = userInfo?.displayName,
+            uid = userInfo?.uid,
             email = userInfo?.email,
             contacts = mutableListOf(""),
             artBoards = mutableListOf(""),
             profilePicture = ""
         )
         viewModelScope.launch {
-            userRef.child(userInfo?.uid.toString()).setValue(user).addOnCompleteListener {
+            usernameRef.child(userInfo?.displayName.toString()).setValue(user).addOnCompleteListener {
                 _user.value = user
             }
-        }
-
-        viewModelScope.launch {
-            usernameRef.child(userInfo?.displayName.toString()).setValue(userInfo?.uid)
         }
     }
 
@@ -87,9 +90,19 @@ class UserViewModel : ViewModel() {
             TextField.USER_USERNAME -> {
                 _userUsernameText.value = text
             }
+            TextField.SEARCH_STRING -> {
+                _searchString.value = text
+            }
             else -> {
                 _confirmPasswordText.value = text
             }
+        }
+    }
+
+    fun clearTextField() {
+        // Resets all text fields.
+        for (enum in TextField.values()) {
+            updateTextFieldText("", enum)
         }
     }
 
@@ -113,10 +126,7 @@ class UserViewModel : ViewModel() {
                     toastMaker(context, "Registration Failed!").show()
                 }
 
-                // Resets values in text fields.
-                for (enum in TextField.values()) {
-                    updateTextFieldText("", enum)
-                }
+                clearTextField()
             }
     }
 
@@ -134,27 +144,50 @@ class UserViewModel : ViewModel() {
                     toastMaker(context, "Login Failed!").show()
                 }
 
-                // Resets all text fields.
-                for (enum in TextField.values()) {
-                    updateTextFieldText("", enum)
-                }
+                clearTextField()
             }
     }
 
-    fun retrieveUserInfo() {
-        database
-            .getReference("users")
-            .child(auth.currentUser?.uid.toString()).get()
-            .addOnSuccessListener {
-                _user.value = User(
-                    username = it.child("username").value.toString(),
-                    email = it.child("email").value.toString(),
-                    contacts = it.child("contacts").value as MutableList<String>?,
-                    artBoards = it.child("artBoards").value as MutableList<String>?,
-                    profilePicture = it.child("profilePicture").value.toString()
-                )
-                Log.i("user", "${_user.value}")
+    private fun retrieveUserInfo() {
+        viewModelScope.launch {
+            val user = viewModelScope.async {
+                database
+                    .getReference("usernames")
+                    .child(auth.currentUser?.displayName.toString()).get()
+                    .addOnSuccessListener {
+                        _user.value = User(
+                            uid = it.child("uid").value.toString(),
+                            email = it.child("email").value.toString(),
+                            contacts = it.child("contacts").value as MutableList<String>?,
+                            artBoards = it.child("artBoards").value as MutableList<String>?,
+                            profilePicture = it.child("profilePicture").value.toString()
+                        )
+                        Log.i("user", "${_user.value}")
+                    }
             }
+            user.await().addOnCompleteListener {
+                createContactList()
+            }
+        }
+    }
+
+    private fun createContactList() {
+        viewModelScope.launch {
+            for (contact in _user.value?.contacts!!) {
+                database
+                    .getReference("users")
+                    .child(contact).get()
+                    .addOnSuccessListener { user ->
+                        _contactList.value?.add(
+                            Contact(
+                                username = user.key.toString(),
+                                profilePic = user.child("profilePicture").value.toString(),
+                                uid = user.child("uid").value.toString()
+                            )
+                        )
+                    }
+            }
+        }
     }
 
     fun logout() {
@@ -184,5 +217,6 @@ enum class TextField {
     USER_EMAIL,
     USER_PASSWORD,
     USER_CONFIRM_PASSWORD,
-    USER_USERNAME
+    USER_USERNAME,
+    SEARCH_STRING
 }

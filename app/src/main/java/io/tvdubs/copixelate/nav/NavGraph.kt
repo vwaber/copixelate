@@ -57,5 +57,11 @@ fun SetupNavGraph(
                 MessageThreadScreen(navController = navController, viewModel = userViewModel)
             }
         }
+
+        composable(
+            route = Screen.Contacts.route
+        ) {
+            ContactsScreen(navController = navController, viewModel = userViewModel)
+        }
     }
 }

@@ -23,7 +23,10 @@ fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
             viewModel.logout()
             navController.navigate(Screen.Art.route)
         },
-        username = viewModel.user.value?.username
+        username = viewModel.auth.currentUser?.displayName,
+        onNewMessageClick = {
+            navController.navigate(Screen.Contacts.route)
+        }
     )
 }
 
@@ -33,12 +36,13 @@ fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
 fun MessagesScreenContent(
     clickMessageThread: () -> Unit,
     onLogoutClick: () -> Unit,
-    username: String?
+    username: String?,
+    onNewMessageClick: () -> Unit
 ) {
     Scaffold (
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /*TODO*/ }
+                onClick = { onNewMessageClick() }
             ) {
                 Image(
                     painter = painterResource(
