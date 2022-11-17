@@ -55,17 +55,23 @@ class UserViewModel : ViewModel() {
 
     private fun createUser() {
         val userInfo = auth.currentUser
-        val ref = database.getReference("users")
+        val userRef = database.getReference("users")
+        val usernameRef = database.getReference("usernames")
         val user = User(
             username = userInfo?.displayName,
             email = userInfo?.email,
             contacts = mutableListOf(""),
-            artBoards = mutableListOf("")
+            artBoards = mutableListOf(""),
+            profilePicture = ""
         )
         viewModelScope.launch {
-            ref.child(userInfo?.uid.toString()).setValue(user).addOnCompleteListener {
+            userRef.child(userInfo?.uid.toString()).setValue(user).addOnCompleteListener {
                 _user.value = user
             }
+        }
+
+        viewModelScope.launch {
+            usernameRef.child(userInfo?.displayName.toString()).setValue(userInfo?.uid)
         }
     }
 
@@ -144,7 +150,8 @@ class UserViewModel : ViewModel() {
                     username = it.child("username").value.toString(),
                     email = it.child("email").value.toString(),
                     contacts = it.child("contacts").value as MutableList<String>?,
-                    artBoards = it.child("artBoards").value as MutableList<String>?
+                    artBoards = it.child("artBoards").value as MutableList<String>?,
+                    profilePicture = it.child("profilePicture").value.toString()
                 )
                 Log.i("user", "${_user.value}")
             }
