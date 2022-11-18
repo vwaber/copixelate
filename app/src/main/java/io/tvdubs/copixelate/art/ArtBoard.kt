@@ -155,18 +155,17 @@ private class Brush(size: Int, style: Style) {
 
     private fun createCircleBrush(size: Int) =
         ArrayList<PointF>().apply {
-            fun Int.isEven() = this % 2 == 0
             val r = (size + 0.5) / 2f
 
             for (i1 in 0..size) {
-                if (size.isEven() != i1.isEven()) continue
+                if (size % 2 != i1 % 2) continue
                 val x = i1 / 2f
 
                 for (i2 in 0..size) {
-                    if (size.isEven() != i2.isEven()) continue
+                    if (size % 2 != i2 % 2) continue
                     val y = i2 / 2f
 
-                    if (sqrt((x * x * 1f) + (y * y * 1f)) <= r) {
+                    if (sqrt((x * x) + (y * y)) <= r) {
                         add(PointF(x, y))
                         if (x != 0f) add(PointF(-x, y))
                         if (y != 0f) add(PointF(x, -y))
@@ -180,7 +179,7 @@ private class Brush(size: Int, style: Style) {
         ArrayList<PointF>().apply {
             for (x in 0..size) {
                 for (y in 0..size) {
-                    val rand = (0..(size + 5)*(size + 5)).random(Random(System.nanoTime()))
+                    val rand = (0..(size + 5) * (size + 5)).random(Random(System.nanoTime()))
                     if (rand == 0) {
                         add(PointF(x - (size / 2f), y - (size / 2f)))
                     }
@@ -226,7 +225,7 @@ private fun PointF.toIndex(bounds: Point): Result<Int> =
     if (x < 0 || x > bounds.x || y < 0 || y > bounds.y)
         Result.failure(
             IndexOutOfBoundsException(
-                "toIndex: Failed; Position ${this.toString()} exceeds valid bounds ${bounds.toString()}"
+                "toIndex: Failed; Position $this exceeds valid bounds $bounds"
             )
         )
     else
