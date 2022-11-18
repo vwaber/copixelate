@@ -150,17 +150,27 @@ private class Brush(size: Int, style: Style) {
 
     private fun createCircleBrush(size: Int) =
         ArrayList<PointF>().apply {
-                for (x in 0 until size) {
-                    for (y in 0 until size) {
-                        if (sqrt(((x * x) + (y * y)).toDouble()) <= size - 1) {
-                            add(PointF(x.toFloat(), y.toFloat()))
-                            add(PointF(-x.toFloat(), y.toFloat()))
-                            add(PointF(-x.toFloat(), -y.toFloat()))
-                            add(PointF(x.toFloat(), -y.toFloat()))
-                        }
+            fun Int.isEven() = this % 2 == 0
+            val r = (size + 0.5) / 2f
+
+            for (i1 in 0..size) {
+                if (size.isEven() != i1.isEven()) continue
+                val x = i1 / 2f
+
+                for (i2 in 0..size) {
+                    if (size.isEven() != i2.isEven()) continue
+                    val y = i2 / 2f
+
+                    if (sqrt((x * x * 1f) + (y * y * 1f)) <= r) {
+                        add(PointF(x, y))
+                        if (x != 0f) add(PointF(-x, y))
+                        if (y != 0f) add(PointF(x, -y))
+                        if (x != 0f && y != 0f) add(PointF(-x, -y))
                     }
+                }
             }
         }
+
 }
 
 private class Palette(
