@@ -94,8 +94,8 @@ private class Drawing(
     ): Result<Unit> =
         position.toIndex(drawing.size).fold({
 
-            brush.bristles.forEach { bristle ->
-                (position + bristle).toIndex(drawing.size).onSuccess { index ->
+            brush.toBristles(position).forEach { bristle ->
+                bristle.toIndex(drawing.size).onSuccess { index ->
                     drawing.pixels[index] = paletteIndex
                 }
             }
@@ -116,25 +116,30 @@ private class Brush(size: Int, style: Style) {
         SNOW(true)
     }
 
-    private val _bristles = ArrayList<PointF>()
-    val bristles: List<PointF> = _bristles
+    private val bristles = ArrayList<PointF>()
 
     var size = size
-        set(value) = createBrush(value, style)
+        set(_) = createBrush()
     var style = style
-        set(value) = createBrush(size, value)
+        set(_) = createBrush()
 
     init {
-        createBrush(size, style)
+        createBrush()
     }
 
-    private fun createBrush(size: Int, shape: Style) {
-        _bristles.clear()
-        _bristles.addAll(
-            when (shape) {
+    fun toBristles(position: PointF): List<PointF> =
+        bristles.map { it + position }.also {
+            if (style.dynamic) createBrush()
+        }
+
+
+    private fun createBrush() {
+        bristles.clear()
+        bristles.addAll(
+            when (style) {
                 Style.SQUARE -> createSquareBrush(size)
                 Style.CIRCLE -> createCircleBrush(size)
-                else -> createSquareBrush(size)
+                Style.SNOW -> createSnowBrush(size)
             }
         )
     }
@@ -166,6 +171,18 @@ private class Brush(size: Int, style: Style) {
                         if (x != 0f) add(PointF(-x, y))
                         if (y != 0f) add(PointF(x, -y))
                         if (x != 0f && y != 0f) add(PointF(-x, -y))
+                    }
+                }
+            }
+        }
+
+    private fun createSnowBrush(size: Int) =
+        ArrayList<PointF>().apply {
+            for (x in 0..size) {
+                for (y in 0..size) {
+                    val rand = (0..(size + 5)*(size + 5)).random(Random(System.nanoTime()))
+                    if (rand == 0) {
+                        add(PointF(x - (size / 2f), y - (size / 2f)))
                     }
                 }
             }
