@@ -7,8 +7,8 @@ import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-private const val DEFAULT_DRAWING_WIDTH = 24
-private const val DEFAULT_DRAWING_HEIGHT = 24
+private const val DEFAULT_DRAWING_WIDTH = 32
+private const val DEFAULT_DRAWING_HEIGHT = 32
 private const val DEFAULT_PALETTE_WIDTH = 6
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
@@ -20,13 +20,14 @@ private operator fun PointF.plus(p: PointF) = PointF(x + p.x, y + p.y)
 
 class ArtBoard {
 
-    private var drawing = createRandomDrawing(
-        createRandomPalette(), createDefaultBrush()
-    )
+    private var palette = createRandomPalette()
+    private var brush = createDefaultBrush(palette)
+    private var drawing = createRandomDrawing(palette, brush)
 
     val drawingBitmap get() = drawing.bitmap
     val paletteBitmap get() = drawing.palette.bitmap
     val paletteBorderBitmap get() = drawing.palette.borderBitmap
+    val brushBitmap get() = drawing.brush.bitmap
 
     fun updateDrawing(viewSize: Point, viewInputPosition: PointF): Result<Unit> {
 
@@ -64,8 +65,8 @@ class ArtBoard {
         return Drawing(drawingSize, randomPixels, palette, brush)
     }
 
-    private fun createDefaultBrush(): Brush {
-        return Brush(DEFAULT_BRUSH_SIZE, DEFAULT_BRUSH_STYLE)
+    private fun createDefaultBrush(palette: Palette): Brush {
+        return Brush(DEFAULT_BRUSH_SIZE, DEFAULT_BRUSH_STYLE, palette)
     }
 
 }
@@ -108,7 +109,7 @@ private class Drawing(
 }
 
 
-private class Brush(size: Int, style: Style) {
+private class Brush(size: Int, style: Style, palette: Palette) {
 
     enum class Style(val dynamic: Boolean) {
         SQUARE(false),
@@ -118,6 +119,18 @@ private class Brush(size: Int, style: Style) {
 
     private val bristles = ArrayList<PointF>()
 
+    private val preview = Drawing(
+        size = Point(10, 10),
+        pixels = IntArray(100) { 1 },
+        palette,
+        brush = this
+    )
+
+    val bitmap: Bitmap get() {
+        createBrush()
+        return preview.bitmap
+    }
+
     var size = size
         set(_) = createBrush()
     var style = style
@@ -125,6 +138,7 @@ private class Brush(size: Int, style: Style) {
 
     init {
         createBrush()
+
     }
 
     fun toBristles(position: PointF): List<PointF> =
@@ -142,6 +156,7 @@ private class Brush(size: Int, style: Style) {
                 Style.SNOW -> createSnowBrush(size)
             }
         )
+        preview.draw(PointF(preview.size.x / 2f, preview.size.y / 2f))
     }
 
     private fun createSquareBrush(size: Int) =
@@ -196,7 +211,7 @@ private class Palette(
 ) {
 
     val bitmap: Bitmap get() = toBitmap()
-    val borderBitmap: Bitmap get() = toBitmap(size, IntArray(colors.size) { currentColor })
+    val borderBitmap: Bitmap get() = toBitmap(Point(1, 1), IntArray(1) { currentColor })
 
     private val currentColor: Int get() = colors[activeIndex]
 

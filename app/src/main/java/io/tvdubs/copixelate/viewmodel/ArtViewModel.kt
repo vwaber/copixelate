@@ -17,26 +17,33 @@ class ArtViewModel : ViewModel() {
     private val _drawingBitmap = MutableStateFlow(artBoard.drawingBitmap)
     private val _paletteBitmap = MutableStateFlow(artBoard.paletteBitmap)
     private val _paletteBorderBitmap = MutableStateFlow(artBoard.paletteBorderBitmap)
+    private val _brushBitmap = MutableStateFlow(artBoard.brushBitmap)
 
-    val bitmap = _drawingBitmap.asStateFlow()
+    val drawingBitmap = _drawingBitmap.asStateFlow()
     val paletteBitmap = _paletteBitmap.asStateFlow()
     val paletteBorderBitmap = _paletteBorderBitmap.asStateFlow()
+    val brushBitmap = _brushBitmap.asStateFlow()
 
     fun updateDrawing(viewSize: Point, position: PointF) {
-        artBoard.updateDrawing(viewSize, position).fold({
-            viewModelScope.launch {
-                _drawingBitmap.emit(artBoard.drawingBitmap)
-            }
-        }, { Log.d(javaClass.simpleName, it.toString()) })
+        viewModelScope.launch {
+
+            artBoard.updateDrawing(viewSize, position).fold({
+                _drawingBitmap.value = artBoard.drawingBitmap
+            }, { Log.d(javaClass.simpleName, it.toString()) })
+
+        }
     }
 
     fun updatePaletteActiveIndex(viewSize: Point, position: PointF) {
-        artBoard.updatePaletteActiveIndex(viewSize, position).fold({
-            viewModelScope.launch {
-                _paletteBitmap.emit(artBoard.paletteBitmap)
-                _paletteBorderBitmap.emit(artBoard.paletteBorderBitmap)
-            }
-        }, { Log.d(javaClass.simpleName, it.toString()) })
+        viewModelScope.launch {
+
+            artBoard.updatePaletteActiveIndex(viewSize, position).fold({
+                _paletteBitmap.value = artBoard.paletteBitmap
+                _paletteBorderBitmap.value = artBoard.paletteBorderBitmap
+                _brushBitmap.value = artBoard.brushBitmap
+            }, { Log.d(javaClass.simpleName, it.toString()) })
+
+        }
     }
 
 }
