@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,8 @@ fun ArtScreen(viewModel: ArtViewModel) {
     var drawingViewSize by remember { mutableStateOf(Point()) }
     var paletteViewSize by remember { mutableStateOf(Point()) }
 
+    var sliderValue by remember { mutableStateOf(0.25f) }
+
     Column(
         Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceEvenly
@@ -60,9 +63,18 @@ fun ArtScreen(viewModel: ArtViewModel) {
                         })
                 })
 
-        Row(modifier = Modifier.fillMaxWidth().height(100.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        ) {
 
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxHeight().weight(1f)) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
                 BitmapImage(
                     bitmap = paletteBorderBitmap,
                     contentDescription = "Drawing palette border",
@@ -73,7 +85,9 @@ fun ArtScreen(viewModel: ArtViewModel) {
                     bitmap = paletteBitmap,
                     contentDescription = "Drawing palette",
                     contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
 //                        .scale(1f, 0.85f)
                         .onGloballyPositioned {
                             paletteViewSize = it.size.toPoint()
@@ -88,17 +102,23 @@ fun ArtScreen(viewModel: ArtViewModel) {
                                 })
                         })
             }
-            Column(modifier = Modifier) {
-                BitmapImage(
-                    bitmap = brushBitmap,
-                    contentDescription = "Brush preview",
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier.fillMaxHeight()
-                )
-//                Slider(value = 0f, onValueChange = {})
-            }
+            BitmapImage(
+                bitmap = brushBitmap,
+                contentDescription = "Brush preview",
+                contentScale = ContentScale.FillHeight,
+                modifier = Modifier.fillMaxHeight()
+            )
 
         }
+
+        Slider(
+            value = sliderValue,
+            onValueChange = {
+                sliderValue = it
+                viewModel.updateBrush((it * 19 + 1).toInt())
+            },
+            modifier = Modifier.padding(horizontal = 40.dp)
+        )
 
     }
 

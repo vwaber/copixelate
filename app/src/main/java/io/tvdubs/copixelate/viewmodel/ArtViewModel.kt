@@ -46,4 +46,13 @@ class ArtViewModel : ViewModel() {
         }
     }
 
+    fun updateBrush(size: Int) {
+        viewModelScope.launch {
+
+            artBoard.updateBrushSize(size)
+            _brushBitmap.value = artBoard.brushBitmap
+
+        }
+    }
+
 }
