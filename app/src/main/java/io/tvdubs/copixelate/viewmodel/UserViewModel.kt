@@ -34,6 +34,9 @@ class UserViewModel : ViewModel() {
     private val _userUsernameText: MutableLiveData<String> = MutableLiveData("")
     val userUsernameText: LiveData<String> = _userUsernameText
 
+    private val _addContactString: MutableLiveData<String> = MutableLiveData("")
+    val addContactString: LiveData<String> = _addContactString
+
     private val _signedIn: MutableLiveData<Boolean> = MutableLiveData()
     val singedIn: LiveData<Boolean> = _signedIn
 
@@ -45,6 +48,9 @@ class UserViewModel : ViewModel() {
 
     private val _searchString: MutableLiveData<String> = MutableLiveData("")
     val searchString: LiveData<String> = _searchString
+
+    private val _showDialog: MutableLiveData<Boolean> = MutableLiveData(false)
+    val showDialog: LiveData<Boolean> = _showDialog
 
     // Initialize instance of authorization.
     var auth: FirebaseAuth = Firebase.auth
@@ -67,8 +73,8 @@ class UserViewModel : ViewModel() {
         val user = User(
             uid = userInfo?.uid,
             email = userInfo?.email,
-            contacts = mutableListOf(""),
-            artBoards = mutableListOf(""),
+            contacts = mutableListOf(),
+            artBoards = mutableListOf(),
             profilePicture = ""
         )
         viewModelScope.launch {
@@ -92,6 +98,9 @@ class UserViewModel : ViewModel() {
             }
             TextField.SEARCH_STRING -> {
                 _searchString.value = text
+            }
+            TextField.ADD_CONTACT_STRING -> {
+                _addContactString.value = text
             }
             else -> {
                 _confirmPasswordText.value = text
@@ -173,6 +182,7 @@ class UserViewModel : ViewModel() {
 
     private fun createContactList() {
         viewModelScope.launch {
+            _contactList.value = mutableListOf()
             for (contact in _user.value?.contacts!!) {
                 database
                     .getReference("users")
@@ -193,6 +203,8 @@ class UserViewModel : ViewModel() {
     fun logout() {
         changeSignInStatus(false)
         auth.signOut()
+        _contactList.value = mutableListOf()
+        _user.value = null
     }
 
     fun changeSignInStatus(status: Boolean) {
@@ -211,6 +223,30 @@ class UserViewModel : ViewModel() {
         return Toast.makeText(context, text, Toast.LENGTH_LONG)
     }
 
+    fun changeDialogState() {
+        _showDialog.value = !_showDialog.value!!
+    }
+
+    fun addContact(username: String, context: Context) {
+
+        if (username !in _user.value?.contacts!!) {
+            _user.value?.contacts?.add(username)
+            viewModelScope.launch {
+                database
+                    .getReference("usernames")
+                    .child(auth.currentUser?.displayName.toString())
+                    .child("contacts")
+                    .setValue(_user.value?.contacts).addOnCompleteListener {
+                        createContactList()
+                        clearTextField()
+                        toastMaker(context, "Contact Added!")
+                    }
+            }
+        } else {
+            clearTextField()
+            toastMaker(context, "Contact Already Added!")
+        }
+    }
 }
 
 enum class TextField {
@@ -218,5 +254,6 @@ enum class TextField {
     USER_PASSWORD,
     USER_CONFIRM_PASSWORD,
     USER_USERNAME,
-    SEARCH_STRING
+    SEARCH_STRING,
+    ADD_CONTACT_STRING
 }
