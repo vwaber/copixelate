@@ -88,7 +88,6 @@ fun ArtScreen(viewModel: ArtViewModel) {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(10.dp)
-//                        .scale(1f, 0.85f)
                         .onGloballyPositioned {
                             paletteViewSize = it.size.toPoint()
                         }

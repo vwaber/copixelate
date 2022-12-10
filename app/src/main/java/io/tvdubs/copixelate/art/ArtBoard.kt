@@ -68,11 +68,6 @@ class ArtBoard {
         brushPreview.draw(brushPreview.size / 2f)
     }
 
-    fun createPaletteBorderBitmap() {
-
-    }
-
-
     fun updateDrawing(viewSize: Point, viewInputPosition: PointF): Result<Unit> {
         val scaledPosition = viewInputPosition * (drawing.size / viewSize)
         return drawing.draw(scaledPosition)
@@ -157,11 +152,7 @@ private class Drawing(
 
 private class Brush(size: Int, style: Style) {
 
-    enum class Style(val dynamic: Boolean) {
-        SQUARE(false),
-        CIRCLE(false),
-        SNOW(true)
-    }
+    enum class Style { SQUARE, CIRCLE }
 
     private val bristles = ArrayList<PointF>()
 
@@ -172,17 +163,17 @@ private class Brush(size: Int, style: Style) {
         }
 
     var style = style
-        set(_) = createBrush()
+        set(value) {
+            field = value
+            createBrush()
+        }
 
     init {
         createBrush()
-
     }
 
     fun toBristles(position: PointF): List<PointF> =
-        bristles.map { it + position }.also {
-            if (style.dynamic) createBrush()
-        }
+        bristles.map { it + position }
 
     private fun createBrush() {
         val size = size - 1
@@ -191,7 +182,6 @@ private class Brush(size: Int, style: Style) {
             when (style) {
                 Style.SQUARE -> createSquareBrush(size)
                 Style.CIRCLE -> createCircleBrush(size)
-                Style.SNOW -> createSnowBrush(size)
             }
         )
     }
@@ -222,18 +212,6 @@ private class Brush(size: Int, style: Style) {
                         if (x != 0f) add(PointF(-x, y))
                         if (y != 0f) add(PointF(x, -y))
                         if (x != 0f && y != 0f) add(PointF(-x, -y))
-                    }
-                }
-            }
-        }
-
-    private fun createSnowBrush(size: Int) =
-        ArrayList<PointF>().apply {
-            for (x in 0..size) {
-                for (y in 0..size) {
-                    val rand = (0..(size + 5) * (size + 5)).random(Random(System.nanoTime()))
-                    if (rand == 0) {
-                        add(PointF(x - (size / 2f), y - (size / 2f)))
                     }
                 }
             }
