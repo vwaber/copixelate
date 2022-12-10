@@ -7,10 +7,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
@@ -18,6 +18,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 private fun IntSize.toPoint() = Point(width, height)
@@ -26,12 +27,15 @@ private fun Offset.toPointF() = PointF(x, y)
 @Composable
 fun ArtScreen(viewModel: ArtViewModel) {
 
-    val drawingBitmap by viewModel.bitmap.collectAsState()
+    val drawingBitmap by viewModel.drawingBitmap.collectAsState()
     val paletteBitmap by viewModel.paletteBitmap.collectAsState()
     val paletteBorderBitmap by viewModel.paletteBorderBitmap.collectAsState()
+    val brushBitmap by viewModel.brushBitmap.collectAsState()
 
     var drawingViewSize by remember { mutableStateOf(Point()) }
     var paletteViewSize by remember { mutableStateOf(Point()) }
+
+    var sliderValue by remember { mutableStateOf(0.25f) }
 
     Column(
         Modifier.fillMaxSize(),
@@ -41,6 +45,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
         BitmapImage(
             bitmap = drawingBitmap,
             contentDescription = "Drawing",
+            contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned {
@@ -58,32 +63,61 @@ fun ArtScreen(viewModel: ArtViewModel) {
                         })
                 })
 
-        Box(contentAlignment = Alignment.Center) {
-            BitmapImage(
-                bitmap = paletteBorderBitmap,
-                contentDescription = "Drawing palette border",
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        ) {
+
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                BitmapImage(
+                    bitmap = paletteBorderBitmap,
+                    contentDescription = "Drawing palette border",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxSize()
+                )
+                BitmapImage(
+                    bitmap = paletteBitmap,
+                    contentDescription = "Drawing palette",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                        .onGloballyPositioned {
+                            paletteViewSize = it.size.toPoint()
+                        }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = { offset ->
+                                    viewModel.updatePaletteActiveIndex(
+                                        paletteViewSize,
+                                        offset.toPointF()
+                                    )
+                                })
+                        })
+            }
+            BitmapImage(
+                bitmap = brushBitmap,
+                contentDescription = "Brush preview",
+                contentScale = ContentScale.FillHeight,
+                modifier = Modifier.fillMaxHeight()
             )
-            BitmapImage(
-                bitmap = paletteBitmap,
-                contentDescription = "Drawing palette",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .scale(1f, 0.85f)
-                    .onGloballyPositioned {
-                        paletteViewSize = it.size.toPoint()
-                    }
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = { offset ->
-                                viewModel.updatePaletteActiveIndex(
-                                    paletteViewSize,
-                                    offset.toPointF()
-                                )
-                            })
-                    })
+
         }
+
+        Slider(
+            value = sliderValue,
+            onValueChange = {
+                sliderValue = it
+                viewModel.updateBrush((it * 19 + 1).toInt())
+            },
+            modifier = Modifier.padding(horizontal = 40.dp)
+        )
 
     }
 
@@ -100,7 +134,7 @@ private fun BitmapImage(
     bitmap: Bitmap,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.FillWidth
+    contentScale: ContentScale
 ) {
     Image(
         bitmap = bitmap.asImageBitmap(),
