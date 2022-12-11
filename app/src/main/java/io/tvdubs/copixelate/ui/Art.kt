@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
@@ -32,95 +33,144 @@ fun ArtScreen(viewModel: ArtViewModel) {
     val paletteBorderBitmap by viewModel.paletteBorderBitmap.collectAsState()
     val brushBitmap by viewModel.brushBitmap.collectAsState()
 
-    var drawingViewSize by remember { mutableStateOf(Point()) }
-    var paletteViewSize by remember { mutableStateOf(Point()) }
-
-    var sliderValue by remember { mutableStateOf(0.25f) }
-
     Column(
         Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
 
-        BitmapImage(
+        Drawing(
             bitmap = drawingBitmap,
-            contentDescription = "Drawing",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .fillMaxWidth()
-                .onGloballyPositioned {
-                    drawingViewSize = it.size.toPoint()
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        viewModel.updateDrawing(drawingViewSize, change.position.toPointF())
-                    }
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { position ->
-                            viewModel.updateDrawing(drawingViewSize, position.toPointF())
-                        })
-                })
-
+            onDraw = { viewSize, position -> viewModel.updateDrawing(viewSize, position) }
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
         ) {
 
-            Box(
-                contentAlignment = Alignment.Center,
+            Palette(
+                bitmap = paletteBitmap,
+                borderBitmap = paletteBorderBitmap,
+                borderSize = 10.dp,
+                onUpdatePaletteActiveIndex = { viewSize, offset ->
+                    viewModel.updatePaletteActiveIndex(viewSize, offset)
+                },
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f)
-            ) {
-                BitmapImage(
-                    bitmap = paletteBorderBitmap,
-                    contentDescription = "Drawing palette border",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize()
-                )
-                BitmapImage(
-                    bitmap = paletteBitmap,
-                    contentDescription = "Drawing palette",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp)
-                        .onGloballyPositioned {
-                            paletteViewSize = it.size.toPoint()
-                        }
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = { offset ->
-                                    viewModel.updatePaletteActiveIndex(
-                                        paletteViewSize,
-                                        offset.toPointF()
-                                    )
-                                })
-                        })
-            }
-            BitmapImage(
+            )
+            BrushPreview(
                 bitmap = brushBitmap,
-                contentDescription = "Brush preview",
                 contentScale = ContentScale.FillHeight,
                 modifier = Modifier.fillMaxHeight()
             )
 
-        }
-
-        Slider(
-            value = sliderValue,
-            onValueChange = {
-                sliderValue = it
-                viewModel.updateBrush((it * 19 + 1).toInt())
-            },
+        }// End Row
+        BrushSizeSlider(
+            onSizeChange = { size -> viewModel.updateBrush(size) },
             modifier = Modifier.padding(horizontal = 40.dp)
         )
 
-    }
+    }// End Column
+}
 
+@Composable
+private fun Drawing(
+    bitmap: Bitmap,
+    onDraw: (viewSize: Point, position: PointF) -> Unit
+) {
+
+    var viewSize by remember { mutableStateOf(Point()) }
+
+    BitmapImage(
+        bitmap = bitmap,
+        contentDescription = "Drawing",
+        contentScale = ContentScale.FillWidth,
+        modifier = Modifier
+            .fillMaxWidth()
+            .onGloballyPositioned {
+                viewSize = it.size.toPoint()
+            }
+            .pointerInput(Unit) {
+                detectDragGestures { change, _ ->
+                    onDraw(viewSize, change.position.toPointF())
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = { position ->
+                        onDraw(viewSize, position.toPointF())
+                    })
+            })
+}
+
+@Composable
+private fun Palette(
+    bitmap: Bitmap,
+    borderBitmap: Bitmap,
+    borderSize: Dp,
+    onUpdatePaletteActiveIndex: (viewSize: Point, position: PointF) -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    var viewSize by remember { mutableStateOf(Point()) }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+    ) {
+        BitmapImage(
+            bitmap = borderBitmap,
+            contentDescription = "Drawing palette border",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+        BitmapImage(
+            bitmap = bitmap,
+            contentDescription = "Drawing palette",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(borderSize)
+                .onGloballyPositioned {
+                    viewSize = it.size.toPoint()
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            onUpdatePaletteActiveIndex(
+                                viewSize,
+                                offset.toPointF()
+                            )
+                        })
+                })
+    }// End Box
+}
+
+@Composable
+private fun BrushSizeSlider(onSizeChange: (Int) -> Unit, modifier: Modifier) {
+
+    var sliderValue by remember { mutableStateOf(0.25f) }
+
+    Slider(
+        value = sliderValue,
+        onValueChange = {
+            sliderValue = it
+            val size = (it * 19 + 1).toInt()
+            onSizeChange(size)
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun BrushPreview(bitmap: Bitmap, contentScale: ContentScale, modifier: Modifier) {
+    BitmapImage(
+        bitmap = bitmap,
+        contentDescription = "Brush preview",
+        contentScale = contentScale,
+        modifier = modifier
+    )
 }
 
 /**
