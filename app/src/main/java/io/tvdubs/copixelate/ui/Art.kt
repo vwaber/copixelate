@@ -152,7 +152,8 @@ private fun Palette(
 private fun BrushPreview(
     bitmap: Bitmap,
     contentScale: ContentScale = ContentScale.FillHeight,
-    modifier: Modifier) {
+    modifier: Modifier
+) {
     BitmapImage(
         bitmap = bitmap,
         contentDescription = "Brush preview",
