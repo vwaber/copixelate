@@ -59,7 +59,6 @@ fun ArtScreen(viewModel: ArtViewModel) {
             )
             BrushPreview(
                 bitmap = brushBitmap,
-                contentScale = ContentScale.FillHeight,
                 modifier = Modifier.fillMaxHeight()
             )
 
@@ -150,7 +149,10 @@ private fun Palette(
 }
 
 @Composable
-private fun BrushPreview(bitmap: Bitmap, contentScale: ContentScale, modifier: Modifier) {
+private fun BrushPreview(
+    bitmap: Bitmap,
+    contentScale: ContentScale = ContentScale.FillHeight,
+    modifier: Modifier) {
     BitmapImage(
         bitmap = bitmap,
         contentDescription = "Brush preview",
