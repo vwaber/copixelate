@@ -170,20 +170,14 @@ private fun BrushSizeSlider(
     modifier: Modifier
 ) {
 
-    var sliderValue by remember {
-        mutableStateOf(
-            (1f * steps.default - steps.min) / steps.size
-        )
-    }
+    var currentStep by remember { mutableStateOf(steps.default) }
 
     Slider(
-        value = sliderValue,
+        value = (currentStep - steps.min) * 1f / steps.size,
         onValueChange = { newValue ->
-            sliderValue = newValue
-            val size = sliderValue * steps.size + steps.min
-            onSizeChange(size.toInt())
+            currentStep = (newValue * steps.size + steps.min).toInt()
+            onSizeChange(currentStep)
         },
-        steps = steps.size - 1,
         modifier = modifier
     )
 }
