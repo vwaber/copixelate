@@ -18,11 +18,13 @@ class ArtViewModel : ViewModel() {
     private val _paletteBitmap = MutableStateFlow(artBoard.paletteBitmap)
     private val _paletteBorderBitmap = MutableStateFlow(artBoard.paletteBorderBitmap)
     private val _brushBitmap = MutableStateFlow(artBoard.brushBitmap)
+    private val _brushSize = MutableStateFlow(artBoard.brushSize)
 
     val drawingBitmap = _drawingBitmap.asStateFlow()
     val paletteBitmap = _paletteBitmap.asStateFlow()
     val paletteBorderBitmap = _paletteBorderBitmap.asStateFlow()
     val brushBitmap = _brushBitmap.asStateFlow()
+    val brushSize = _brushSize.asStateFlow()
 
     fun updateDrawing(viewSize: Point, position: PointF) {
         viewModelScope.launch {

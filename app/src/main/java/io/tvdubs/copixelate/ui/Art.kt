@@ -22,9 +22,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
-private fun IntSize.toPoint() = Point(width, height)
-private fun Offset.toPointF() = PointF(x, y)
-
 @Composable
 fun ArtScreen(viewModel: ArtViewModel) {
 
@@ -32,6 +29,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
     val paletteBitmap by viewModel.paletteBitmap.collectAsState()
     val paletteBorderBitmap by viewModel.paletteBorderBitmap.collectAsState()
     val brushBitmap by viewModel.brushBitmap.collectAsState()
+    val brushSize by viewModel.brushSize.collectAsState()
 
     Column(
         Modifier.fillMaxSize(),
@@ -51,7 +49,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
             Palette(
                 bitmap = paletteBitmap,
                 borderBitmap = paletteBorderBitmap,
-                borderSize = 10.dp,
+                borderStroke = 10.dp,
                 onUpdatePaletteActiveIndex = { viewSize, offset ->
                     viewModel.updatePaletteActiveIndex(viewSize, offset)
                 },
@@ -67,12 +65,16 @@ fun ArtScreen(viewModel: ArtViewModel) {
 
         }// End Row
         BrushSizeSlider(
+            steps = SliderSteps(1, 16, brushSize),
             onSizeChange = { size -> viewModel.updateBrush(size) },
             modifier = Modifier.padding(horizontal = 40.dp)
         )
 
     }// End Column
 }
+
+private fun IntSize.toPoint() = Point(width, height)
+private fun Offset.toPointF() = PointF(x, y)
 
 @Composable
 private fun Drawing(
@@ -108,7 +110,7 @@ private fun Drawing(
 private fun Palette(
     bitmap: Bitmap,
     borderBitmap: Bitmap,
-    borderSize: Dp,
+    borderStroke: Dp,
     onUpdatePaletteActiveIndex: (viewSize: Point, position: PointF) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -131,7 +133,7 @@ private fun Palette(
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(borderSize)
+                .padding(borderStroke)
                 .onGloballyPositioned {
                     viewSize = it.size.toPoint()
                 }
@@ -148,27 +150,40 @@ private fun Palette(
 }
 
 @Composable
-private fun BrushSizeSlider(onSizeChange: (Int) -> Unit, modifier: Modifier) {
-
-    var sliderValue by remember { mutableStateOf(0.25f) }
-
-    Slider(
-        value = sliderValue,
-        onValueChange = {
-            sliderValue = it
-            val size = (it * 19 + 1).toInt()
-            onSizeChange(size)
-        },
-        modifier = modifier
-    )
-}
-
-@Composable
 private fun BrushPreview(bitmap: Bitmap, contentScale: ContentScale, modifier: Modifier) {
     BitmapImage(
         bitmap = bitmap,
         contentDescription = "Brush preview",
         contentScale = contentScale,
+        modifier = modifier
+    )
+}
+
+private data class SliderSteps(val min: Int, val max: Int, val default: Int) {
+    val size = max - min
+}
+
+@Composable
+private fun BrushSizeSlider(
+    steps: SliderSteps,
+    onSizeChange: (Int) -> Unit,
+    modifier: Modifier
+) {
+
+    var sliderValue by remember {
+        mutableStateOf(
+            (1f * steps.default - steps.min) / steps.size
+        )
+    }
+
+    Slider(
+        value = sliderValue,
+        onValueChange = { newValue ->
+            sliderValue = newValue
+            val size = sliderValue * steps.size + steps.min
+            onSizeChange(size.toInt())
+        },
+        steps = steps.size - 1,
         modifier = modifier
     )
 }

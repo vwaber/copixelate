@@ -12,7 +12,7 @@ private const val DEFAULT_DRAWING_HEIGHT = 32
 private const val DEFAULT_PALETTE_WIDTH = 6
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
-private const val DEFAULT_BRUSH_SIZE = 5
+private const val DEFAULT_BRUSH_SIZE = 7
 private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
 private operator fun PointF.times(f: Float) = PointF(f * x, f * y)
@@ -33,6 +33,7 @@ class ArtBoard {
     val paletteBitmap get() = palette.bitmap
     val paletteBorderBitmap get() = palette.borderBitmap
     val brushBitmap get() = brushPreview.bitmap
+    val brushSize get() = brush.size
 
     private val palette = createRandomPalette()
     private val brush = createDefaultBrush()
