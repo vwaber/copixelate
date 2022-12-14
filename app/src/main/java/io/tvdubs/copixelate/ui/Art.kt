@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.tvdubs.copixelate.art.BitmapData
 import io.tvdubs.copixelate.art.Point
 import io.tvdubs.copixelate.art.PointF
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
@@ -25,10 +26,11 @@ import io.tvdubs.copixelate.viewmodel.ArtViewModel
 @Composable
 fun ArtScreen(viewModel: ArtViewModel) {
 
-    val drawingBitmap by viewModel.drawingBitmap.collectAsState()
-    val paletteBitmap by viewModel.paletteBitmap.collectAsState()
-    val paletteBorderBitmap by viewModel.paletteBorderBitmap.collectAsState()
-    val brushBitmap by viewModel.brushBitmap.collectAsState()
+    val drawingBitmapData by viewModel.drawingBitmapData.collectAsState()
+
+    val paletteBitmapData by viewModel.paletteBitmapData.collectAsState()
+    val paletteBorderBitmapData by viewModel.paletteBorderBitmapData.collectAsState()
+    val brushBitmapData by viewModel.brushBitmapData.collectAsState()
     val brushSize by viewModel.brushSize.collectAsState()
 
     Column(
@@ -37,7 +39,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
     ) {
 
         Drawing(
-            bitmap = drawingBitmap,
+            bitmapData = drawingBitmapData,
             onDraw = { viewSize, position -> viewModel.updateDrawing(viewSize, position) }
         )
         Row(
@@ -47,8 +49,8 @@ fun ArtScreen(viewModel: ArtViewModel) {
         ) {
 
             Palette(
-                bitmap = paletteBitmap,
-                borderBitmap = paletteBorderBitmap,
+                bitmapData = paletteBitmapData,
+                borderBitmapData = paletteBorderBitmapData,
                 borderStroke = 10.dp,
                 onUpdatePaletteActiveIndex = { viewSize, offset ->
                     viewModel.updatePaletteActiveIndex(viewSize, offset)
@@ -58,7 +60,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
                     .weight(1f)
             )
             BrushPreview(
-                bitmap = brushBitmap,
+                bitmapData = brushBitmapData,
                 modifier = Modifier.fillMaxHeight()
             )
 
@@ -77,14 +79,14 @@ private fun Offset.toPointF() = PointF(x, y)
 
 @Composable
 private fun Drawing(
-    bitmap: Bitmap,
+    bitmapData: BitmapData,
     onDraw: (viewSize: Point, position: PointF) -> Unit
 ) {
 
     var viewSize by remember { mutableStateOf(Point()) }
 
     BitmapImage(
-        bitmap = bitmap,
+        bitmapData = bitmapData,
         contentDescription = "Drawing",
         contentScale = ContentScale.FillWidth,
         modifier = Modifier
@@ -107,8 +109,8 @@ private fun Drawing(
 
 @Composable
 private fun Palette(
-    bitmap: Bitmap,
-    borderBitmap: Bitmap,
+    bitmapData: BitmapData,
+    borderBitmapData: BitmapData,
     borderStroke: Dp,
     onUpdatePaletteActiveIndex: (viewSize: Point, position: PointF) -> Unit,
     modifier: Modifier = Modifier
@@ -121,13 +123,13 @@ private fun Palette(
         modifier = modifier
     ) {
         BitmapImage(
-            bitmap = borderBitmap,
+            bitmapData = borderBitmapData,
             contentDescription = "Drawing palette border",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.fillMaxSize()
         )
         BitmapImage(
-            bitmap = bitmap,
+            bitmapData = bitmapData,
             contentDescription = "Drawing palette",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -150,12 +152,12 @@ private fun Palette(
 
 @Composable
 private fun BrushPreview(
-    bitmap: Bitmap,
+    bitmapData: BitmapData,
     contentScale: ContentScale = ContentScale.FillHeight,
     modifier: Modifier
 ) {
     BitmapImage(
-        bitmap = bitmap,
+        bitmapData = bitmapData,
         contentDescription = "Brush preview",
         contentScale = contentScale,
         modifier = modifier
@@ -186,18 +188,26 @@ private fun BrushSizeSlider(
 }
 
 /**
- * A composable that lays out and draws a given [Bitmap] without filtering
+ * A composable that lays out and draws a given [Bitmap] from [BitmapData] without filtering
  *
- * @param bitmap The [Bitmap] to draw unfiltered
+ * @param bitmapData The [BitmapData] to draw unfiltered
  * @param contentDescription text used by accessibility services to describe what this image
  */
 @Composable
 private fun BitmapImage(
-    bitmap: Bitmap,
+    bitmapData: BitmapData,
     contentDescription: String,
     modifier: Modifier = Modifier,
     contentScale: ContentScale
 ) {
+
+    val bitmap = Bitmap.createBitmap(
+        bitmapData.pixels,
+        bitmapData.size.x,
+        bitmapData.size.y,
+        Bitmap.Config.RGB_565
+    )
+
     Image(
         bitmap = bitmap.asImageBitmap(),
         contentDescription = contentDescription,
