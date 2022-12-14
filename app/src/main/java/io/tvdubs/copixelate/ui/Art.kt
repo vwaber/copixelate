@@ -1,8 +1,6 @@
 package io.tvdubs.copixelate.ui
 
 import android.graphics.Bitmap
-import android.graphics.Point
-import android.graphics.PointF
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -20,6 +18,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.tvdubs.copixelate.art.Point
+import io.tvdubs.copixelate.art.PointF
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 @Composable
