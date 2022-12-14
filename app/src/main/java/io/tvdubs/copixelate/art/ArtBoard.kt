@@ -1,8 +1,6 @@
 package io.tvdubs.copixelate.art
 
 import android.graphics.Bitmap
-import android.graphics.Point
-import android.graphics.PointF
 import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -12,20 +10,23 @@ private const val DEFAULT_DRAWING_HEIGHT = 32
 private const val DEFAULT_PALETTE_WIDTH = 6
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
-private const val DEFAULT_BRUSH_SIZE = 5
+private const val DEFAULT_BRUSH_SIZE = 7
 private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
-private operator fun PointF.times(f: Float) = PointF(f * x, f * y)
-private operator fun PointF.times(p: PointF) = PointF(x * p.x, y * p.y)
-private operator fun PointF.plus(p: PointF) = PointF(x + p.x, y + p.y)
-private operator fun Point.div(i: Int) = Point(x / i, y / i)
-private operator fun Point.div(f: Float) = PointF(x / f, y / f)
-private operator fun Point.div(p: Point) = PointF(x * 1f / p.x, y * 1f / p.y)
-private operator fun Point.plusAssign(i: Int) {
-    x += i; y += i
+data class Point(var x: Int = 0, var y: Int = 0){
+    operator fun div(i: Int) = Point(x / i, y / i)
+    operator fun div(f: Float) = PointF(x / f, y / f)
+    operator fun div(p: Point) = PointF(x * 1f / p.x, y * 1f / p.y)
+    operator fun plusAssign(i: Int) {
+        x += i; y += i
+    }
+    fun area() = x * y
 }
-
-private fun Point.area() = x * y
+data class PointF(var x: Float = 0f, var y: Float = 0f){
+    operator fun times(f: Float) = PointF(f * x, f * y)
+    operator fun times(p: PointF) = PointF(x * p.x, y * p.y)
+    operator fun plus(p: PointF) = PointF(x + p.x, y + p.y)
+}
 
 class ArtBoard {
 
@@ -33,6 +34,7 @@ class ArtBoard {
     val paletteBitmap get() = palette.bitmap
     val paletteBorderBitmap get() = palette.borderBitmap
     val brushBitmap get() = brushPreview.bitmap
+    val brushSize get() = brush.size
 
     private val palette = createRandomPalette()
     private val brush = createDefaultBrush()

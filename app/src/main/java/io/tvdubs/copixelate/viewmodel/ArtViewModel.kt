@@ -1,7 +1,5 @@
 package io.tvdubs.copixelate.viewmodel
 
-import android.graphics.Point
-import android.graphics.PointF
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import io.tvdubs.copixelate.art.ArtBoard
+import io.tvdubs.copixelate.art.Point
+import io.tvdubs.copixelate.art.PointF
 
 class ArtViewModel : ViewModel() {
 
@@ -18,11 +18,13 @@ class ArtViewModel : ViewModel() {
     private val _paletteBitmap = MutableStateFlow(artBoard.paletteBitmap)
     private val _paletteBorderBitmap = MutableStateFlow(artBoard.paletteBorderBitmap)
     private val _brushBitmap = MutableStateFlow(artBoard.brushBitmap)
+    private val _brushSize = MutableStateFlow(artBoard.brushSize)
 
     val drawingBitmap = _drawingBitmap.asStateFlow()
     val paletteBitmap = _paletteBitmap.asStateFlow()
     val paletteBorderBitmap = _paletteBorderBitmap.asStateFlow()
     val brushBitmap = _brushBitmap.asStateFlow()
+    val brushSize = _brushSize.asStateFlow()
 
     fun updateDrawing(viewSize: Point, position: PointF) {
         viewModelScope.launch {
