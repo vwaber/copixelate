@@ -1,6 +1,5 @@
 package io.tvdubs.copixelate.art
 
-import android.graphics.Bitmap
 import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -13,16 +12,20 @@ private const val DEFAULT_PALETTE_HEIGHT = 2
 private const val DEFAULT_BRUSH_SIZE = 7
 private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
-data class Point(var x: Int = 0, var y: Int = 0){
+class BitmapData(val size: Point, val pixels: IntArray)
+
+data class Point(var x: Int = 0, var y: Int = 0) {
     operator fun div(i: Int) = Point(x / i, y / i)
     operator fun div(f: Float) = PointF(x / f, y / f)
     operator fun div(p: Point) = PointF(x * 1f / p.x, y * 1f / p.y)
     operator fun plusAssign(i: Int) {
         x += i; y += i
     }
+
     fun area() = x * y
 }
-data class PointF(var x: Float = 0f, var y: Float = 0f){
+
+data class PointF(var x: Float = 0f, var y: Float = 0f) {
     operator fun times(f: Float) = PointF(f * x, f * y)
     operator fun times(p: PointF) = PointF(x * p.x, y * p.y)
     operator fun plus(p: PointF) = PointF(x + p.x, y + p.y)
@@ -30,10 +33,12 @@ data class PointF(var x: Float = 0f, var y: Float = 0f){
 
 class ArtBoard {
 
-    val drawingBitmap get() = drawing.bitmap
-    val paletteBitmap get() = palette.bitmap
-    val paletteBorderBitmap get() = palette.borderBitmap
-    val brushBitmap get() = brushPreview.bitmap
+    val drawingBitmapData get() = drawing.bitmapData
+
+    val paletteBitmapData get() = palette.bitmapData
+    val paletteBorderBitmapData get() = palette.borderBitmapData
+    val brushBitmapData get() = brushPreview.bitmapData
+
     val brushSize get() = brush.size
 
     private val palette = createRandomPalette()
@@ -63,6 +68,7 @@ class ArtBoard {
         if (previewSize.x <= brush.size)
             previewSize = Point(brush.size + 1, brush.size + 1)
 
+        // Center by ensuring size parity
         if (previewSize.x % 2 != brush.size % 2)
             previewSize += 1
 
@@ -116,23 +122,20 @@ private class Drawing(
     val brush: Brush,
 ) {
 
-    val bitmap get() = toBitmap()
+    val bitmapData get() = BitmapData(size, toColorPixels())
 
     fun draw(p: PointF) = updatePixelsWithBrush(p)
 
-    fun clear(paletteIndex: Int) {
-        for (i in pixels.indices) {
-            pixels[i] = paletteIndex
-        }
-    }
+//    fun clear(paletteIndex: Int) {
+//        for (i in pixels.indices) {
+//            pixels[i] = paletteIndex
+//        }
+//    }
 
     fun resize(size: Point, paletteIndex: Int) {
         this.size = size
         pixels = IntArray(size.area()) { paletteIndex }
     }
-
-    private fun toBitmap(): Bitmap =
-        toBitmap(size, toColorPixels())
 
     private fun toColorPixels(): IntArray =
         IntArray(pixels.size) { palette.colors[pixels[it]] }
@@ -178,7 +181,6 @@ private class Brush(size: Int, style: Style) {
         bristles.map { it + position }
 
     private fun createBrush() {
-        val size = size - 1
         bristles.clear()
         bristles.addAll(
             when (style) {
@@ -190,23 +192,25 @@ private class Brush(size: Int, style: Style) {
 
     private fun createSquareBrush(size: Int) =
         ArrayList<PointF>().apply {
-            for (x in 0..size) {
-                for (y in 0..size) {
-                    add(PointF(x - (size / 2f), y - (size / 2f)))
+            val n = size - 1
+            for (x in 0..n) {
+                for (y in 0..n) {
+                    add(PointF(x - (n / 2f), y - (n / 2f)))
                 }
             }
         }
 
     private fun createCircleBrush(size: Int) =
         ArrayList<PointF>().apply {
-            val r = (size + 0.5) / 2f
+            val n = size - 1
+            val r = (n + 0.5) / 2f
 
-            for (i1 in 0..size) {
-                if (size % 2 != i1 % 2) continue
+            for (i1 in 0..n) {
+                if (n % 2 != i1 % 2) continue
                 val x = i1 / 2f
 
-                for (i2 in 0..size) {
-                    if (size % 2 != i2 % 2) continue
+                for (i2 in 0..n) {
+                    if (n % 2 != i2 % 2) continue
                     val y = i2 / 2f
 
                     if (sqrt((x * x) + (y * y)) <= r) {
@@ -229,15 +233,12 @@ private class Palette(
 
     var previousActiveIndex: Int = colors.lastIndex
 
-    val bitmap: Bitmap get() = toBitmap()
-    val borderBitmap: Bitmap get() = toBitmap(Point(1, 1), IntArray(1) { currentColor })
+    val bitmapData: BitmapData get() = BitmapData(size, colors)
+    val borderBitmapData: BitmapData get() = BitmapData(Point(1, 1), IntArray(1) { currentColor })
 
     fun select(position: PointF) = updateActiveIndex(position)
 
     private val currentColor: Int get() = colors[activeIndex]
-
-    private fun toBitmap(palette: Palette = this) =
-        toBitmap(palette.size, palette.colors)
 
     private fun updateActiveIndex(position: PointF, palette: Palette = this): Result<Unit> =
         position.toIndex(palette.size).fold({ newActiveIndex ->
@@ -256,14 +257,6 @@ private class Palette(
         })
 
 }
-
-private fun toBitmap(size: Point, pixels: IntArray): Bitmap =
-    Bitmap.createBitmap(
-        pixels,
-        size.x,
-        size.y,
-        Bitmap.Config.RGB_565
-    )
 
 private fun PointF.toIndex(bounds: Point): Result<Int> =
     if (x < 0 || x > bounds.x || y < 0 || y > bounds.y)

@@ -14,23 +14,26 @@ class ArtViewModel : ViewModel() {
 
     private val artBoard = ArtBoard()
 
-    private val _drawingBitmap = MutableStateFlow(artBoard.drawingBitmap)
-    private val _paletteBitmap = MutableStateFlow(artBoard.paletteBitmap)
-    private val _paletteBorderBitmap = MutableStateFlow(artBoard.paletteBorderBitmap)
-    private val _brushBitmap = MutableStateFlow(artBoard.brushBitmap)
+    private val _drawingBitmapData = MutableStateFlow(artBoard.drawingBitmapData)
+
+    private val _paletteBitmapData = MutableStateFlow(artBoard.paletteBitmapData)
+    private val _paletteBorderBitmapData = MutableStateFlow(artBoard.paletteBorderBitmapData)
+    private val _brushBitmapData = MutableStateFlow(artBoard.brushBitmapData)
+
     private val _brushSize = MutableStateFlow(artBoard.brushSize)
 
-    val drawingBitmap = _drawingBitmap.asStateFlow()
-    val paletteBitmap = _paletteBitmap.asStateFlow()
-    val paletteBorderBitmap = _paletteBorderBitmap.asStateFlow()
-    val brushBitmap = _brushBitmap.asStateFlow()
+    val drawingBitmapData = _drawingBitmapData.asStateFlow()
+
+    val paletteBitmapData = _paletteBitmapData.asStateFlow()
+    val paletteBorderBitmapData = _paletteBorderBitmapData.asStateFlow()
+    val brushBitmapData = _brushBitmapData.asStateFlow()
     val brushSize = _brushSize.asStateFlow()
 
     fun updateDrawing(viewSize: Point, position: PointF) {
         viewModelScope.launch {
 
             artBoard.updateDrawing(viewSize, position).fold({
-                _drawingBitmap.value = artBoard.drawingBitmap
+                _drawingBitmapData.value = artBoard.drawingBitmapData
             }, { Log.d(javaClass.simpleName, it.toString()) })
 
         }
@@ -40,9 +43,9 @@ class ArtViewModel : ViewModel() {
         viewModelScope.launch {
 
             artBoard.updatePaletteActiveIndex(viewSize, position).fold({
-                _paletteBitmap.value = artBoard.paletteBitmap
-                _paletteBorderBitmap.value = artBoard.paletteBorderBitmap
-                _brushBitmap.value = artBoard.brushBitmap
+                _paletteBitmapData.value = artBoard.paletteBitmapData
+                _paletteBorderBitmapData.value = artBoard.paletteBorderBitmapData
+                _brushBitmapData.value = artBoard.brushBitmapData
             }, { Log.d(javaClass.simpleName, it.toString()) })
 
         }
@@ -52,7 +55,7 @@ class ArtViewModel : ViewModel() {
         viewModelScope.launch {
 
             artBoard.updateBrushSize(size)
-            _brushBitmap.value = artBoard.brushBitmap
+            _brushBitmapData.value = artBoard.brushBitmapData
 
         }
     }
