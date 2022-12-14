@@ -181,7 +181,6 @@ private class Brush(size: Int, style: Style) {
         bristles.map { it + position }
 
     private fun createBrush() {
-        val size = size - 1
         bristles.clear()
         bristles.addAll(
             when (style) {
@@ -193,23 +192,25 @@ private class Brush(size: Int, style: Style) {
 
     private fun createSquareBrush(size: Int) =
         ArrayList<PointF>().apply {
-            for (x in 0..size) {
-                for (y in 0..size) {
-                    add(PointF(x - (size / 2f), y - (size / 2f)))
+            val n = size - 1
+            for (x in 0..n) {
+                for (y in 0..n) {
+                    add(PointF(x - (n / 2f), y - (n / 2f)))
                 }
             }
         }
 
     private fun createCircleBrush(size: Int) =
         ArrayList<PointF>().apply {
-            val r = (size + 0.5) / 2f
+            val n = size - 1
+            val r = (n + 0.5) / 2f
 
-            for (i1 in 0..size) {
-                if (size % 2 != i1 % 2) continue
+            for (i1 in 0..n) {
+                if (n % 2 != i1 % 2) continue
                 val x = i1 / 2f
 
-                for (i2 in 0..size) {
-                    if (size % 2 != i2 % 2) continue
+                for (i2 in 0..n) {
+                    if (n % 2 != i2 % 2) continue
                     val y = i2 / 2f
 
                     if (sqrt((x * x) + (y * y)) <= r) {
