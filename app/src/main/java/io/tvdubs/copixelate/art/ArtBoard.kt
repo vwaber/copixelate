@@ -6,7 +6,7 @@ import kotlin.random.Random
 
 private const val DEFAULT_DRAWING_WIDTH = 32
 private const val DEFAULT_DRAWING_HEIGHT = 32
-private const val DEFAULT_PALETTE_WIDTH = 6
+private const val DEFAULT_PALETTE_WIDTH = 3
 private const val DEFAULT_PALETTE_HEIGHT = 2
 
 private const val DEFAULT_BRUSH_SIZE = 7
@@ -14,50 +14,52 @@ private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
 class BitmapData(val size: Point, val pixels: IntArray)
 
-data class Point(var x: Int = 0, var y: Int = 0) {
+data class Point(var x: Int = 0, var y: Int = x) {
     operator fun div(i: Int) = Point(x / i, y / i)
     operator fun div(f: Float) = PointF(x / f, y / f)
     operator fun div(p: Point) = PointF(x * 1f / p.x, y * 1f / p.y)
+
     operator fun plusAssign(i: Int) {
         x += i; y += i
     }
 
     fun area() = x * y
+    fun contains(p: PointF): Boolean = !(p.x < 0 || p.x > x || p.y < 0 || p.y > y)
 }
 
-data class PointF(var x: Float = 0f, var y: Float = 0f) {
+data class PointF(var x: Float = 0f, var y: Float = x) {
     operator fun times(f: Float) = PointF(f * x, f * y)
     operator fun times(p: PointF) = PointF(x * p.x, y * p.y)
+    operator fun times(p: Point) = PointF(x * p.x, y * p.y)
     operator fun plus(p: PointF) = PointF(x + p.x, y + p.y)
+    operator fun div(p: Point) = PointF(x / p.x, y / p.y)
+
+    fun toIndex(bounds: Point): Int = (floor(y) * bounds.x + floor(x)).toInt()
+    fun asUnitToIndex(bounds: Point): Int = (this * bounds).run { toIndex(bounds) }
+    fun isUnit() = Point(1).contains(this)
+}
+
+private fun List<PointF>.toIndexes(bounds: Point): IntArray = run {
+    toMutableList().apply {
+        retainAll { point -> bounds.contains(point) }
+    }.run { IntArray(size) { this[it].toIndex(bounds) } }
 }
 
 class ArtBoard {
 
     val drawingBitmapData get() = drawing.bitmapData
-
     val paletteBitmapData get() = palette.bitmapData
     val paletteBorderBitmapData get() = palette.borderBitmapData
     val brushBitmapData get() = brushPreview.bitmapData
-
     val brushSize get() = brush.size
 
-    private val palette = createRandomPalette()
+    private val palette = createDefaultPalette()
     private val brush = createDefaultBrush()
-    private val drawing = createRandomDrawing(palette, brush)
+    private val drawing = createDefaultDrawing()
 
-    private val brushPreview = Drawing(
-        size = Point(),
-        pixels = IntArray(0),
-        palette,
-        brush
-    )
+    private val brushPreview = Drawing()
 
     init {
-        refreshBrushPreviewBitmap()
-    }
-
-    fun updateBrushSize(size: Int) {
-        brush.size = size
         refreshBrushPreviewBitmap()
     }
 
@@ -72,125 +74,198 @@ class ArtBoard {
         if (previewSize.x % 2 != brush.size % 2)
             previewSize += 1
 
-        brushPreview.resize(previewSize, palette.previousActiveIndex)
-        brushPreview.draw(brushPreview.size / 2f)
+        val drawPosition = previewSize / 2f
+        val drawIndexes = brush
+            .toPointsAt(drawPosition)
+            .toIndexes(previewSize)
+
+        brushPreview
+            .resize(previewSize)
+            .clear(palette.previousActiveIndex)
+            .recolor(palette.colors)
+            .draw(
+                indexes = drawIndexes,
+                pixelIndex = palette.activeIndex,
+                pixelColor = palette.activeColor
+            )
     }
 
-    fun updateDrawing(viewSize: Point, viewInputPosition: PointF): Result<Unit> {
-        val scaledPosition = viewInputPosition * (drawing.size / viewSize)
-        return drawing.draw(scaledPosition)
+    fun updateBrushSize(size: Int) {
+        brush.restyle(size = size)
+        refreshBrushPreviewBitmap()
     }
 
-    fun updatePaletteActiveIndex(viewSize: Point, viewInputPosition: PointF): Result<Unit> {
-        val scaledPosition = viewInputPosition * (palette.size / viewSize)
-        return palette.select(scaledPosition).fold({
-            refreshBrushPreviewBitmap()
-            Result.success(Unit)
-        }, { Result.failure(it) })
-    }
+    fun updateDrawing(unitPosition: PointF): Result<Unit> {
 
-    private fun createRandomPalette(): Palette {
-
-        val randomPixels = IntArray(DEFAULT_PALETTE_WIDTH * DEFAULT_PALETTE_HEIGHT) {
-            Random(System.nanoTime()).nextInt()
+        if (!unitPosition.isUnit()) {
+            return Result.failure(
+                IllegalArgumentException(
+                    "updateDrawing: unitPosition $unitPosition ain't normal"
+                )
+            )
         }
-        val paletteSize = Point(DEFAULT_PALETTE_WIDTH, DEFAULT_PALETTE_HEIGHT)
 
-        return Palette(paletteSize, randomPixels)
+        val drawPosition = unitPosition * drawing.size
+
+        drawing.draw(
+            indexes = brush
+                .toPointsAt(drawPosition)
+                .toIndexes(drawing.size),
+            pixelIndex = palette.activeIndex,
+            pixelColor = palette.activeColor
+        )
+
+        return Result.success(Unit)
     }
 
-    private fun createRandomDrawing(palette: Palette, brush: Brush): Drawing {
+    fun updatePalette(unitPosition: PointF): Result<Unit> {
 
-        val randomPixels = IntArray(DEFAULT_DRAWING_WIDTH * DEFAULT_DRAWING_HEIGHT) {
-            (1 until palette.colors.size).random(Random(System.nanoTime()))
+        if (!unitPosition.isUnit()) {
+            return Result.failure(
+                IllegalArgumentException(
+                    "updatePalette: Failed; unitPosition $unitPosition ain't normal"
+                )
+            )
         }
-        val drawingSize = Point(DEFAULT_DRAWING_WIDTH, DEFAULT_DRAWING_HEIGHT)
 
-        return Drawing(drawingSize, randomPixels, palette, brush)
+        val paletteIndex = unitPosition.asUnitToIndex(palette.size)
+
+        if (paletteIndex == palette.activeIndex) {
+            return Result.failure(
+                IllegalArgumentException(
+                    "updatePalette: Failed; New value is same as current"
+                )
+            )
+        }
+
+        palette.select(paletteIndex)
+        refreshBrushPreviewBitmap()
+
+        return Result.success(Unit)
     }
 
-    private fun createDefaultBrush(): Brush {
-        return Brush(DEFAULT_BRUSH_SIZE, DEFAULT_BRUSH_STYLE)
-    }
+    private fun createDefaultPalette() =
+        Palette()
+            .resize(size = Point(DEFAULT_PALETTE_WIDTH, DEFAULT_PALETTE_HEIGHT))
+            .clear { Random(System.nanoTime()).nextInt() }
+
+    private fun createDefaultDrawing() =
+        Drawing()
+            .resize(Point(DEFAULT_DRAWING_WIDTH, DEFAULT_DRAWING_HEIGHT))
+            .clear { index: Int -> (index / 5) % palette.colors.size }
+            .recolor(palette.colors)
+
+    private fun createDefaultBrush() =
+        Brush()
+            .restyle(DEFAULT_BRUSH_STYLE, DEFAULT_BRUSH_SIZE)
 
 }
 
-private class Drawing(
-    var size: Point,
-    var pixels: IntArray,
-    val palette: Palette,
-    val brush: Brush,
-) {
+private class Drawing {
 
-    val bitmapData get() = BitmapData(size, toColorPixels())
+    private var indexPixels = IntArray(0)
+    private var colorPixels = IntArray(0)
 
-    fun draw(p: PointF) = updatePixelsWithBrush(p)
+    var size: Point = Point()
+        private set
 
-//    fun clear(paletteIndex: Int) {
-//        for (i in pixels.indices) {
-//            pixels[i] = paletteIndex
-//        }
-//    }
+    val bitmapData get() = BitmapData(size, colorPixels)
 
-    fun resize(size: Point, paletteIndex: Int) {
+    fun resize(size: Point): Drawing = apply {
         this.size = size
-        pixels = IntArray(size.area()) { paletteIndex }
+        indexPixels = IntArray(size.area()) { 0 }
     }
 
-    private fun toColorPixels(): IntArray =
-        IntArray(pixels.size) { palette.colors[pixels[it]] }
+    fun recolor(colors: IntArray): Drawing = apply {
+        colorPixels = IntArray(indexPixels.size) { i -> colors[indexPixels[i]] }
+    }
 
-    private fun updatePixelsWithBrush(position: PointF): Result<Unit> =
-        position.toIndex(size).fold({
-            brush.toBristles(position).forEach { bristle ->
-                bristle.toIndex(size).onSuccess { index ->
-                    pixels[index] = palette.activeIndex
-                }
-            }
-            Result.success(Unit)
-        }, {
-            Result.failure(it)
-        })
+    fun clear(paletteIndex: Int): Drawing = apply {
+        for (i in indexPixels.indices) {
+            indexPixels[i] = paletteIndex
+        }
+    }
+
+    fun clear(mutator: (index: Int) -> Int) = apply {
+        indexPixels = IntArray(size.area(), mutator)
+    }
+
+    fun draw(indexes: IntArray, pixelIndex: Int, pixelColor: Int) {
+        indexes.forEach { index ->
+            indexPixels[index] = pixelIndex
+            colorPixels[index] = pixelColor
+        }
+    }
 
 }
 
+private class Palette {
 
-private class Brush(size: Int, style: Style) {
+    var size: Point = Point()
+        private set
+    var colors: IntArray = IntArray(0) { 0 }
+        private set
+    var activeIndex: Int = 0
+        private set
+
+    val activeColor: Int get() = colors[activeIndex]
+
+    val previousActiveIndex: Int get() = previousActiveIndexes[0]
+    var previousActiveIndexes = ArrayDeque<Int>(0)
+        private set
+
+    val bitmapData: BitmapData
+        get() = BitmapData(size, colors)
+    val borderBitmapData: BitmapData
+        get() = BitmapData(Point(1), IntArray(1) { activeColor })
+
+    fun resize(size: Point) = apply {
+        this.size = size
+        colors = IntArray(size.area()) { 0 }
+    }
+
+    fun clear(mutator: (index: Int) -> Int) = apply {
+        colors = IntArray(size.area(), mutator)
+        previousActiveIndexes = ArrayDeque(
+            List(3) { index -> colors.lastIndex - index })
+    }
+
+    fun select(index: Int) {
+        previousActiveIndexes.apply { addFirst(activeIndex); removeLast() }
+        activeIndex = index
+    }
+
+}
+
+private class Brush {
 
     enum class Style { SQUARE, CIRCLE }
 
+    var size: Int = 0
+    var style: Style = Style.CIRCLE
+
     private val bristles = ArrayList<PointF>()
 
-    var size = size
-        set(value) {
-            field = value
-            createBrush()
-        }
-
-    var style = style
-        set(value) {
-            field = value
-            createBrush()
-        }
-
-    init {
-        createBrush()
+    fun restyle(style: Style = this.style, size: Int = this.size) = apply {
+        this.style = style
+        this.size = size
+        build()
     }
 
-    fun toBristles(position: PointF): List<PointF> =
+    fun toPointsAt(position: PointF): List<PointF> =
         bristles.map { it + position }
 
-    private fun createBrush() {
+    private fun build() = apply {
         bristles.clear()
         bristles.addAll(
             when (style) {
-                Style.SQUARE -> createSquareBrush(size)
-                Style.CIRCLE -> createCircleBrush(size)
+                Style.SQUARE -> buildSquareBrush(size)
+                Style.CIRCLE -> buildCircleBrush(size)
             }
         )
     }
 
-    private fun createSquareBrush(size: Int) =
+    private fun buildSquareBrush(size: Int) =
         ArrayList<PointF>().apply {
             val n = size - 1
             for (x in 0..n) {
@@ -200,7 +275,7 @@ private class Brush(size: Int, style: Style) {
             }
         }
 
-    private fun createCircleBrush(size: Int) =
+    private fun buildCircleBrush(size: Int) =
         ArrayList<PointF>().apply {
             val n = size - 1
             val r = (n + 0.5) / 2f
@@ -224,46 +299,3 @@ private class Brush(size: Int, style: Style) {
         }
 
 }
-
-private class Palette(
-    var size: Point,
-    var colors: IntArray,
-    var activeIndex: Int = 0
-) {
-
-    var previousActiveIndex: Int = colors.lastIndex
-
-    val bitmapData: BitmapData get() = BitmapData(size, colors)
-    val borderBitmapData: BitmapData get() = BitmapData(Point(1, 1), IntArray(1) { currentColor })
-
-    fun select(position: PointF) = updateActiveIndex(position)
-
-    private val currentColor: Int get() = colors[activeIndex]
-
-    private fun updateActiveIndex(position: PointF, palette: Palette = this): Result<Unit> =
-        position.toIndex(palette.size).fold({ newActiveIndex ->
-            if (palette.activeIndex == newActiveIndex) {
-                return Result.failure(
-                    IllegalArgumentException(
-                        "updateActiveIndex: Failed; Argument matches current value"
-                    )
-                )
-            }
-            palette.previousActiveIndex = palette.activeIndex
-            palette.activeIndex = newActiveIndex
-            return Result.success(Unit)
-        }, {
-            return Result.failure(it)
-        })
-
-}
-
-private fun PointF.toIndex(bounds: Point): Result<Int> =
-    if (x < 0 || x > bounds.x || y < 0 || y > bounds.y)
-        Result.failure(
-            IndexOutOfBoundsException(
-                "toIndex: Failed; Position $this exceeds valid bounds $bounds"
-            )
-        )
-    else
-        Result.success((floor(y) * bounds.x + floor(x)).toInt())

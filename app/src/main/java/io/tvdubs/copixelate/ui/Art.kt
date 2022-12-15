@@ -40,7 +40,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
 
         Drawing(
             bitmapData = drawingBitmapData,
-            onDraw = { viewSize, position -> viewModel.updateDrawing(viewSize, position) }
+            onDraw = { unitPosition -> viewModel.updateDrawing(unitPosition) }
         )
         Row(
             modifier = Modifier
@@ -52,8 +52,8 @@ fun ArtScreen(viewModel: ArtViewModel) {
                 bitmapData = paletteBitmapData,
                 borderBitmapData = paletteBorderBitmapData,
                 borderStroke = 10.dp,
-                onUpdatePaletteActiveIndex = { viewSize, offset ->
-                    viewModel.updatePaletteActiveIndex(viewSize, offset)
+                onUpdatePaletteActiveIndex = { unitPosition ->
+                    viewModel.updatePaletteActiveIndex(unitPosition)
                 },
                 modifier = Modifier
                     .fillMaxHeight()
@@ -80,7 +80,7 @@ private fun Offset.toPointF() = PointF(x, y)
 @Composable
 private fun Drawing(
     bitmapData: BitmapData,
-    onDraw: (viewSize: Point, position: PointF) -> Unit
+    onDraw: (unitPosition: PointF) -> Unit
 ) {
 
     var viewSize by remember { mutableStateOf(Point()) }
@@ -96,13 +96,13 @@ private fun Drawing(
             }
             .pointerInput(Unit) {
                 detectDragGestures { change, _ ->
-                    onDraw(viewSize, change.position.toPointF())
+                    onDraw(change.position.toPointF() / viewSize)
                 }
             }
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = { position ->
-                        onDraw(viewSize, position.toPointF())
+                        onDraw(position.toPointF() / viewSize)
                     })
             })
 }
@@ -112,7 +112,7 @@ private fun Palette(
     bitmapData: BitmapData,
     borderBitmapData: BitmapData,
     borderStroke: Dp,
-    onUpdatePaletteActiveIndex: (viewSize: Point, position: PointF) -> Unit,
+    onUpdatePaletteActiveIndex: (unitPosition: PointF) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -141,10 +141,7 @@ private fun Palette(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = { offset ->
-                            onUpdatePaletteActiveIndex(
-                                viewSize,
-                                offset.toPointF()
-                            )
+                            onUpdatePaletteActiveIndex(offset.toPointF() / viewSize)
                         })
                 })
     }// End Box
