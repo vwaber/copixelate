@@ -22,46 +22,7 @@ fun MainContent(navController: NavHostController) {
     CopixelateTheme {
 
         Scaffold(
-            bottomBar = {
-
-                val navBarItems = listOf(
-                    Screen.Art,
-                    Screen.Messages
-                )
-
-                NavigationBar {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    navBarItems.forEach { screen ->
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    Icons.Filled.Favorite,
-                                    contentDescription = "Butt icon"
-                                )
-                            },
-                            //label = { Text(stringResource(screen.resourceId)) },
-                            label = { Text("Butt") },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    // Pop up to the start destination of the graph to
-                                    // avoid building up a large stack of destinations
-                                    // on the back stack as users select items
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    // Avoid multiple copies of the same destination when
-                                    // reselecting the same item
-                                    launchSingleTop = true
-                                    // Restore state when reselecting a previously selected item
-                                    restoreState = true
-                                }
-                            }
-                        )
-                    }
-                }
-            }
+            bottomBar = { BottomBar(navController) }
         ) {
             //Account for bottom nav bar height
             Surface(Modifier.padding(it)) {
@@ -70,3 +31,47 @@ fun MainContent(navController: NavHostController) {
         }
     }
 }
+
+@Composable
+fun BottomBar(navController: NavHostController) {
+
+    val navBarItems = listOf(
+        Screen.Art,
+        Screen.Messages
+    )
+
+    NavigationBar {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        navBarItems.forEach { screen ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = "Butt icon"
+                    )
+                },
+                //label = { Text(stringResource(screen.resourceId)) },
+                label = { Text("Butt") },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                }
+            )
+        }// End navBarItems.forEach()
+    }// End Navigation Bar
+
+}
+
