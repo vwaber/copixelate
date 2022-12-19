@@ -1,4 +1,4 @@
-package io.tvdubs.copixelate.art
+package vwaber.copixelate.art
 
 import kotlin.math.floor
 import kotlin.math.sqrt

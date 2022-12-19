@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import io.tvdubs.copixelate.art.ArtBoard
-import io.tvdubs.copixelate.art.PointF
+import vwaber.copixelate.art.ArtBoard
+import vwaber.copixelate.art.PointF
 
 class ArtViewModel : ViewModel() {
 

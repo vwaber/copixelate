@@ -18,9 +18,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import io.tvdubs.copixelate.art.BitmapData
-import io.tvdubs.copixelate.art.Point
-import io.tvdubs.copixelate.art.PointF
+import vwaber.copixelate.art.BitmapData
+import vwaber.copixelate.art.Point
+import vwaber.copixelate.art.PointF
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 
 @Composable
