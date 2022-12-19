@@ -11,7 +11,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.nav.SetupNavGraph
 import io.tvdubs.copixelate.ui.theme.CopixelateTheme
 
@@ -36,8 +36,8 @@ fun MainContent(navController: NavHostController) {
 fun BottomBar(navController: NavHostController) {
 
     val navBarItems = listOf(
-        Screen.Art,
-        Screen.Messages
+        ScreenInfo.Art,
+        ScreenInfo.Messages
     )
 
     NavigationBar {

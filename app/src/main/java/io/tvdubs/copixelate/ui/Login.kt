@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.data.TextField
-import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
@@ -33,8 +33,8 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
     val passwordVisible: Boolean by viewModel.passwordVisible.observeAsState(initial = false)
 
     if (singedInStatus) {
-        navController.navigate(Screen.Messages.route) {
-            popUpTo(Screen.Messages.route) {
+        navController.navigate(ScreenInfo.Messages.route) {
+            popUpTo(ScreenInfo.Messages.route) {
                 inclusive = true
             }
         }
@@ -55,7 +55,7 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
             }
         },
         onRegistrationClick = {
-            navController.navigate(Screen.Registration.route)
+            navController.navigate(ScreenInfo.Registration.route)
         },
         passwordVisible = passwordVisible,
         onShowPasswordClick = { viewModel.changePasswordVisibility() }
