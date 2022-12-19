@@ -29,7 +29,9 @@ fun MainContent(navController: NavHostController) {
                 SetupNavGraph(navController = navController)
             }
         }
+
     }
+
 }
 
 @Composable
@@ -43,7 +45,7 @@ fun BottomBar(navController: NavHostController) {
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        navBarItems.forEach { screen ->
+        navBarItems.forEach { screenInfo ->
             NavigationBarItem(
                 icon = {
                     Icon(
@@ -51,11 +53,11 @@ fun BottomBar(navController: NavHostController) {
                         contentDescription = "Butt icon"
                     )
                 },
-                //label = { Text(stringResource(screen.resourceId)) },
+                //label = { Text(stringResource(screenInfo.resourceId)) },
                 label = { Text("Butt") },
-                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                selected = currentDestination?.hierarchy?.any { it.route == screenInfo.route } == true,
                 onClick = {
-                    navController.navigate(screen.route) {
+                    navController.navigate(screenInfo.route) {
                         // Pop up to the start destination of the graph to
                         // avoid building up a large stack of destinations
                         // on the back stack as users select items
@@ -69,9 +71,8 @@ fun BottomBar(navController: NavHostController) {
                         restoreState = true
                     }
                 }
-            )
-        }// End navBarItems.forEach()
-    }// End Navigation Bar
+            )// End NavigationBarItem
+        }// End navBarItems.forEach
+    }// End Navigation
 
 }
-
