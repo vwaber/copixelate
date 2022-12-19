@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import io.tvdubs.copixelate.art.ArtBoard
-import io.tvdubs.copixelate.art.Point
 import io.tvdubs.copixelate.art.PointF
 
 class ArtViewModel : ViewModel() {
@@ -29,20 +28,20 @@ class ArtViewModel : ViewModel() {
     val brushBitmapData = _brushBitmapData.asStateFlow()
     val brushSize = _brushSize.asStateFlow()
 
-    fun updateDrawing(viewSize: Point, position: PointF) {
+    fun updateDrawing(unitPosition: PointF) {
         viewModelScope.launch {
 
-            artBoard.updateDrawing(viewSize, position).fold({
+            artBoard.updateDrawing(unitPosition).fold({
                 _drawingBitmapData.value = artBoard.drawingBitmapData
             }, { Log.d(javaClass.simpleName, it.toString()) })
 
         }
     }
 
-    fun updatePaletteActiveIndex(viewSize: Point, position: PointF) {
+    fun updatePaletteActiveIndex(unitPosition: PointF) {
         viewModelScope.launch {
 
-            artBoard.updatePaletteActiveIndex(viewSize, position).fold({
+            artBoard.updatePalette(unitPosition).fold({
                 _paletteBitmapData.value = artBoard.paletteBitmapData
                 _paletteBorderBitmapData.value = artBoard.paletteBorderBitmapData
                 _brushBitmapData.value = artBoard.brushBitmapData
