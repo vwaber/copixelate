@@ -23,9 +23,9 @@ fun MainContent(navController: NavHostController) {
 
         Scaffold(
             bottomBar = { BottomBar(navController) }
-        ) {
-            //Account for bottom nav bar height
-            Surface(Modifier.padding(it)) {
+        ) { offsetPadding ->
+            //Account for bottom nav bar size
+            Surface(Modifier.padding(offsetPadding)) {
                 SetupNavGraph(navController = navController)
             }
         }
