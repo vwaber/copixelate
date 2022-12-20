@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import io.tvdubs.copixelate.data.TextField
 import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.viewmodel.UserViewModel
+import vwaber.copixelate.core.AppUses
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
@@ -46,6 +47,7 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
         onUserEmailChange = { viewModel.updateTextFieldText(it, TextField.USER_EMAIL) },
         onUserPasswordChange = { viewModel.updateTextFieldText(it, TextField.USER_PASSWORD) },
         onLoginClick = {
+            AppUses.login()
             if (userEmailText == "") {
                 viewModel.toastMaker(context, "Enter Email").show()
             } else if (userPasswordText == "") {
