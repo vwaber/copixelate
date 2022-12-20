@@ -17,22 +17,22 @@ fun SetupNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Art.route
+        startDestination = ScreenInfo.Art.route
     ) {
         composable(
-            route = Screen.Art.route
+            route = ScreenInfo.Art.route
         ) {
             ArtScreen(viewModel = artViewModel)
         }
 
         composable(
-            route = Screen.Registration.route
+            route = ScreenInfo.Registration.route
         ) {
             RegistrationScreen(navController = navController, viewModel = userViewModel)
         }
 
         composable(
-            route = Screen.Messages.route
+            route = ScreenInfo.Messages.route
         ) {
             userViewModel.changePasswordVisibility(false)
             if (userViewModel.auth.currentUser == null) {
@@ -49,7 +49,7 @@ fun SetupNavGraph(
         }
 
         composable(
-            route = Screen.MessageThread.route
+            route = ScreenInfo.MessageThread.route
         ) {
             if (userViewModel.auth.currentUser == null) {
                 LoginScreen(navController = navController, viewModel = userViewModel)

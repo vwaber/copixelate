@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.data.TextField
-import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
@@ -36,8 +36,8 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
         onRegistrationClick = {
             if (confirmPassword == userPassword && userEmail != "" && userPassword != "" && userUsername != "") {
                 viewModel.registerUserEmail(userEmail, userPassword, context)
-                navController.navigate(Screen.Art.route) {
-                    popUpTo(Screen.Art.route) {
+                navController.navigate(ScreenInfo.Art.route) {
+                    popUpTo(ScreenInfo.Art.route) {
                         inclusive = true
                     }
                 }
@@ -54,8 +54,8 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
             }
         },
         onCancelClick = {
-            navController.navigate(Screen.Messages.route) {
-                popUpTo(Screen.Messages.route) {
+            navController.navigate(ScreenInfo.Messages.route) {
+                popUpTo(ScreenInfo.Messages.route) {
                     inclusive = true
                 }
             }

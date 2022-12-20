@@ -10,16 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import io.tvdubs.copixelate.nav.Screen
+import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
 fun MessageThreadScreen(navController: NavController, viewModel: UserViewModel) {
     MessageThreadContent(
-        onBackClick = { navController.navigate(Screen.Messages.route) },
+        onBackClick = { navController.navigate(ScreenInfo.Messages.route) },
         onLogoutClick = {
             viewModel.logout()
-            navController.navigate(Screen.Art.route)
+            navController.navigate(ScreenInfo.Art.route)
         }
     )
 }
