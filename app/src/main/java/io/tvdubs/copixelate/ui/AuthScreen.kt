@@ -6,6 +6,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -74,7 +79,23 @@ fun AuthScreenPreview() {
 
 }
 
-enum class Action { SIGN_IN, SIGN_UP }
+private enum class Action {
+    SIGN_IN, SIGN_UP;
+
+    fun next() = when (this) {
+        SIGN_IN -> SIGN_UP
+        SIGN_UP -> SIGN_IN
+    }
+}
+
+private enum class Visibility {
+    VISIBLE, HIDDEN;
+
+    fun toggle() = when (this) {
+        VISIBLE -> HIDDEN
+        HIDDEN -> VISIBLE
+    }
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,8 +108,9 @@ private fun AuthForm(
     var email: String by remember { mutableStateOf("") }
     var displayName: String by remember { mutableStateOf("") }
     var password: String by remember { mutableStateOf("") }
+    var passwordVisibility: Visibility by remember { mutableStateOf(Visibility.HIDDEN) }
     var passwordAgain: String by remember { mutableStateOf("") }
-    var isPasswordVisible: Boolean by remember { mutableStateOf(false) }
+    var passwordAgainVisibility: Visibility by remember { mutableStateOf(Visibility.HIDDEN) }
 
     val composableScope = rememberCoroutineScope()
 
@@ -137,6 +159,23 @@ private fun AuthForm(
                 value = password,
                 onValueChange = { value -> password = value },
                 label = { Text(text = "Password") },
+                visualTransformation = when (passwordVisibility) {
+                    Visibility.VISIBLE -> VisualTransformation.None
+                    Visibility.HIDDEN -> PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    val image = when (passwordVisibility) {
+                        Visibility.VISIBLE -> Icons.Filled.VisibilityOff
+                        Visibility.HIDDEN -> Icons.Filled.Visibility
+                    }
+                    val contentDescription = when (passwordVisibility) {
+                        Visibility.VISIBLE -> "Hide password"
+                        Visibility.HIDDEN -> "Show password"
+                    }
+                    IconButton(onClick = { passwordVisibility = passwordVisibility.toggle() }) {
+                        Icon(image, contentDescription)
+                    }
+                },
                 keyboardOptions = when (action) {
                     Action.SIGN_IN -> KeyboardOptions(imeAction = ImeAction.Done)
                     Action.SIGN_UP -> KeyboardOptions(imeAction = ImeAction.Next)
@@ -158,6 +197,25 @@ private fun AuthForm(
                     value = passwordAgain,
                     onValueChange = { value -> passwordAgain = value },
                     label = { Text(text = "Password... again") },
+                    visualTransformation = when (passwordAgainVisibility) {
+                        Visibility.VISIBLE -> VisualTransformation.None
+                        Visibility.HIDDEN -> PasswordVisualTransformation()
+                    },
+                    trailingIcon = {
+                        val image = when (passwordAgainVisibility) {
+                            Visibility.VISIBLE -> Icons.Filled.VisibilityOff
+                            Visibility.HIDDEN -> Icons.Filled.Visibility
+                        }
+                        val contentDescription = when (passwordAgainVisibility) {
+                            Visibility.VISIBLE -> "Hide password confirm"
+                            Visibility.HIDDEN -> "Show password confirm"
+                        }
+                        IconButton(onClick = {
+                            passwordAgainVisibility = passwordAgainVisibility.toggle()
+                        }) {
+                            Icon(image, contentDescription)
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = { focusManager.clearFocus() }),
@@ -196,11 +254,10 @@ private fun AuthForm(
             TextButton(
                 onClick = {
                     password = ""
+                    passwordVisibility = Visibility.HIDDEN
                     passwordAgain = ""
-                    action = when (action) {
-                        Action.SIGN_IN -> Action.SIGN_UP
-                        Action.SIGN_UP -> Action.SIGN_IN
-                    }
+                    passwordAgainVisibility = Visibility.HIDDEN
+                    action = action.next()
                 },
                 modifier = Modifier
                     .padding(top = 16.dp)
