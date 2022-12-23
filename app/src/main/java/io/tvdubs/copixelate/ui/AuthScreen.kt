@@ -108,6 +108,7 @@ private fun AuthForm(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // Email Input Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { value -> email = value },
@@ -118,6 +119,7 @@ private fun AuthForm(
                 modifier = Modifier
                     .padding(bottom = 4.dp),
             )
+            // Display Name Input Field
             if (action == Action.SIGN_UP) {
                 OutlinedTextField(
                     value = displayName,
@@ -130,6 +132,7 @@ private fun AuthForm(
                         .padding(bottom = 4.dp)
                 )
             }
+            // Password Input Field
             OutlinedTextField(
                 value = password,
                 onValueChange = { value -> password = value },
@@ -140,17 +143,16 @@ private fun AuthForm(
                 },
                 keyboardActions = when (action) {
                     Action.SIGN_IN -> {
-                        KeyboardActions(
-                            onDone = { focusManager.clearFocus() })
+                        KeyboardActions(onDone = { focusManager.clearFocus() })
                     }
                     Action.SIGN_UP -> {
-                        KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     }
                 },
                 modifier = Modifier
                     .padding(bottom = 4.dp)
             )
+            // Password Again Input Field
             if (action == Action.SIGN_UP) {
                 OutlinedTextField(
                     value = passwordAgain,
@@ -162,6 +164,7 @@ private fun AuthForm(
                     modifier = Modifier
                 )
             }
+            // Action Button
             Button(
                 onClick = {
                     composableScope.launch {
@@ -189,6 +192,7 @@ private fun AuthForm(
                     }
                 )
             }
+            // Switch Action Button
             TextButton(
                 onClick = {
                     password = ""
