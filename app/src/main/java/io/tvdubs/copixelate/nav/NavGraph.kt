@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import io.tvdubs.copixelate.data.Auth
 import io.tvdubs.copixelate.ui.*
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
-import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 fun NavController.refresh() {
     currentDestination?.route?.let { route ->
@@ -22,8 +21,7 @@ fun NavController.refresh() {
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
-    artViewModel: ArtViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel()
+    artViewModel: ArtViewModel = viewModel()
 ) {
 
     NavHost(
@@ -31,26 +29,15 @@ fun SetupNavGraph(
         startDestination = ScreenInfo.Art.route
     ) {
 
-        composable(
-            route = ScreenInfo.Art.route
-        ) {
+        composable(route = ScreenInfo.Art.route) {
             ArtScreen(viewModel = artViewModel)
         }
 
-        composable(
-            route = ScreenInfo.Registration.route
-        ) {
-            RegistrationScreen(navController = navController, viewModel = userViewModel)
-        }
-
-        composable(
-            route = ScreenInfo.Messages.route
-        ) {
+        composable(route = ScreenInfo.Messages.route) {
             when (Auth.state) {
                 Auth.State.SIGNED_OUT -> AuthScreen(navController)
                 Auth.State.SIGNED_IN -> MessagesScreen(navController)
             }
-
         }
 
     }
