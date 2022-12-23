@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import io.tvdubs.copixelate.data.Auth
 import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.viewmodel.UserViewModel
 
@@ -20,7 +21,7 @@ fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
             viewModel.logout()
             navController.navigate(ScreenInfo.Art.route)
         },
-        username = viewModel.auth.currentUser?.displayName
+        username = Auth.displayName
     )
 }
 

@@ -53,7 +53,7 @@ fun LoginScreen(navController: NavController, viewModel: UserViewModel) {
             } else if (userPasswordText == "") {
                 viewModel.toastMaker(context, "Enter Password").show()
             } else {
-                viewModel.signIn(userEmailText, userPasswordText, context)
+                viewModel.signIn(userEmailText, userPasswordText)
             }
         },
         onRegistrationClick = {

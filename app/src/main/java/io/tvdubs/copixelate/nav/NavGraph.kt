@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import io.tvdubs.copixelate.data.Auth
 import io.tvdubs.copixelate.ui.*
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
 import io.tvdubs.copixelate.viewmodel.UserViewModel
@@ -35,7 +36,7 @@ fun SetupNavGraph(
             route = ScreenInfo.Messages.route
         ) {
             userViewModel.changePasswordVisibility(false)
-            if (userViewModel.auth.currentUser == null) {
+            if (!Auth.isSignedIn) {
                 userViewModel.changeSignInStatus(false)
                 LoginScreen(navController = navController, viewModel = userViewModel)
             } else {
@@ -51,7 +52,7 @@ fun SetupNavGraph(
         composable(
             route = ScreenInfo.MessageThread.route
         ) {
-            if (userViewModel.auth.currentUser == null) {
+            if (!Auth.isSignedIn) {
                 LoginScreen(navController = navController, viewModel = userViewModel)
             } else {
                 MessageThreadScreen(navController = navController, viewModel = userViewModel)

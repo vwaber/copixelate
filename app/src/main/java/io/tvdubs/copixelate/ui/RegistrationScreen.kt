@@ -35,7 +35,7 @@ fun RegistrationScreen(navController: NavController, viewModel: UserViewModel) {
     RegistrationScreenContent(
         onRegistrationClick = {
             if (confirmPassword == userPassword && userEmail != "" && userPassword != "" && userUsername != "") {
-                viewModel.registerUserEmail(userEmail, userPassword, context)
+                viewModel.registerUserEmail(userEmail, userPassword)
                 navController.navigate(ScreenInfo.Art.route) {
                     popUpTo(ScreenInfo.Art.route) {
                         inclusive = true

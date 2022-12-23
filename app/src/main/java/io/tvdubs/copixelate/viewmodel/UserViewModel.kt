@@ -6,10 +6,8 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import io.tvdubs.copixelate.data.Auth
+import io.tvdubs.copixelate.data.AuthResult
 import io.tvdubs.copixelate.data.TextField
 
 class UserViewModel : ViewModel() {
@@ -32,9 +30,6 @@ class UserViewModel : ViewModel() {
     private val _signedIn: MutableLiveData<Boolean> = MutableLiveData()
     val singedIn: LiveData<Boolean> = _signedIn
 
-    // Initialize instance of authorization.
-    var auth: FirebaseAuth = Firebase.auth
-
     private val _passwordVisible: MutableLiveData<Boolean> = MutableLiveData(false)
     val passwordVisible: LiveData<Boolean> = _passwordVisible
 
@@ -56,52 +51,51 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun registerUserEmail(email: String, password: String, context: Context) {
+    fun registerUserEmail(email: String, password: String) {
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+        Auth.createAccount(email, password) { result ->
+            when (result) {
+                is AuthResult.Success -> {
                     Log.i("registration", "successful")
-                    auth.currentUser?.updateProfile(
-                        UserProfileChangeRequest
-                            .Builder()
-                            .setDisplayName(userUsernameText.value.toString())
-                            .build()
-                    )
-                } else {
-                    Log.i("registration", "failed: ${task.exception}")
-                    toastMaker(context, "Registration Failed!").show()
+                    Auth.updateAccount(userUsernameText.value.toString())
                 }
-
-                // Resets values in text fields.
-                for (enum in TextField.values()) {
-                    updateTextFieldText("", enum)
+                is AuthResult.Failure -> {
+                    Log.i("registration", "failed: ${result.message}")
                 }
             }
+            // Resets values in text fields.
+            for (enum in TextField.values()) {
+                updateTextFieldText("", enum)
+            }
+
+        }
+
     }
 
-    fun signIn(email: String, password: String, context: Context) {
+    fun signIn(email: String, password: String) {
 
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+        Auth.signIn(email, password) { result ->
+            when (result) {
+                is AuthResult.Success -> {
+                    Log.d("signIn", "successful")
                     changeSignInStatus(true)
-                    Log.i("login", "successful")
-                } else {
-                    Log.i("login", "failed: ${task.exception}")
-                    toastMaker(context, "Login Failed!").show()
                 }
-
-                // Resets all text fields.
-                for (enum in TextField.values()) {
-                    updateTextFieldText("", enum)
+                is AuthResult.Failure -> {
+                    Log.d("signIn", "failed: ${result.message}")
                 }
             }
+
+            // Resets all text fields.
+            for (enum in TextField.values()) {
+                updateTextFieldText("", enum)
+            }
+        }
+
     }
 
     fun logout() {
         changeSignInStatus(false)
-        auth.signOut()
+        Auth.signOut()
     }
 
     fun changeSignInStatus(status: Boolean) {
