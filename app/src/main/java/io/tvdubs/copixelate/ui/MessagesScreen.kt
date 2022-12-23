@@ -10,15 +10,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.data.Auth
 import io.tvdubs.copixelate.nav.ScreenInfo
-import io.tvdubs.copixelate.viewmodel.UserViewModel
 
 @Composable
-fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
+fun MessagesScreen(navController: NavController) {
 
     MessagesScreenContent(
         clickMessageThread = { navController.navigate(ScreenInfo.MessageThread.route) },
         onLogoutClick = {
-            viewModel.logout()
+            Auth.signOut()
             navController.navigate(ScreenInfo.Art.route)
         },
         username = Auth.displayName
