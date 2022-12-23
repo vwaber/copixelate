@@ -74,15 +74,7 @@ fun AuthScreenPreview() {
 
 }
 
-private data class ViewState(
-    val action: Action = Action.SIGN_IN,
-    val email: String = "",
-    val displayName: String = "",
-    val password: String = "",
-    val passwordAgain: String = ""
-) {
-    enum class Action { SIGN_IN, SIGN_UP }
-}
+enum class Action { SIGN_IN, SIGN_UP }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +83,12 @@ private fun AuthForm(
     onSignIn: (email: String, password: String) -> Unit
 ) {
 
-    var state by remember { mutableStateOf(ViewState()) }
+    var action: Action by remember { mutableStateOf(Action.SIGN_IN) }
+    var email: String by remember { mutableStateOf("") }
+    var displayName: String by remember { mutableStateOf("") }
+    var password: String by remember { mutableStateOf("") }
+    var passwordAgain: String by remember { mutableStateOf("") }
+    var isPasswordVisible: Boolean by remember { mutableStateOf(false) }
 
     val composableScope = rememberCoroutineScope()
 
@@ -103,7 +100,6 @@ private fun AuthForm(
             .verticalScroll(rememberScrollState())
     ) {
 
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -113,8 +109,8 @@ private fun AuthForm(
         ) {
 
             OutlinedTextField(
-                value = state.email,
-                onValueChange = { value -> state = state.copy(email = value) },
+                value = email,
+                onValueChange = { value -> email = value },
                 label = { Text(text = "Email") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
@@ -122,10 +118,10 @@ private fun AuthForm(
                 modifier = Modifier
                     .padding(bottom = 4.dp),
             )
-            if (state.action == ViewState.Action.SIGN_UP) {
+            if (action == Action.SIGN_UP) {
                 OutlinedTextField(
-                    value = state.displayName,
-                    onValueChange = { value -> state = state.copy(displayName = value) },
+                    value = displayName,
+                    onValueChange = { value -> displayName = value },
                     label = { Text(text = "Display Name") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(
@@ -135,19 +131,19 @@ private fun AuthForm(
                 )
             }
             OutlinedTextField(
-                value = state.password,
-                onValueChange = { value -> state = state.copy(password = value) },
+                value = password,
+                onValueChange = { value -> password = value },
                 label = { Text(text = "Password") },
-                keyboardOptions = when (state.action) {
-                    ViewState.Action.SIGN_IN -> KeyboardOptions(imeAction = ImeAction.Done)
-                    ViewState.Action.SIGN_UP -> KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = when (action) {
+                    Action.SIGN_IN -> KeyboardOptions(imeAction = ImeAction.Done)
+                    Action.SIGN_UP -> KeyboardOptions(imeAction = ImeAction.Next)
                 },
-                keyboardActions = when (state.action) {
-                    ViewState.Action.SIGN_IN -> {
+                keyboardActions = when (action) {
+                    Action.SIGN_IN -> {
                         KeyboardActions(
                             onDone = { focusManager.clearFocus() })
                     }
-                    ViewState.Action.SIGN_UP -> {
+                    Action.SIGN_UP -> {
                         KeyboardActions(
                             onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     }
@@ -155,10 +151,10 @@ private fun AuthForm(
                 modifier = Modifier
                     .padding(bottom = 4.dp)
             )
-            if (state.action == ViewState.Action.SIGN_UP) {
+            if (action == Action.SIGN_UP) {
                 OutlinedTextField(
-                    value = state.passwordAgain,
-                    onValueChange = { value -> state = state.copy(passwordAgain = value) },
+                    value = passwordAgain,
+                    onValueChange = { value -> passwordAgain = value },
                     label = { Text(text = "Password... again") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
@@ -169,15 +165,15 @@ private fun AuthForm(
             Button(
                 onClick = {
                     composableScope.launch {
-                        when (state.action) {
-                            ViewState.Action.SIGN_IN -> onSignIn(
-                                state.email,
-                                state.password
+                        when (action) {
+                            Action.SIGN_IN -> onSignIn(
+                                email,
+                                password
                             )
-                            ViewState.Action.SIGN_UP -> onSignUp(
-                                state.email,
-                                state.displayName,
-                                state.password
+                            Action.SIGN_UP -> onSignUp(
+                                email,
+                                displayName,
+                                password
                             )
                         }
                     }
@@ -187,31 +183,29 @@ private fun AuthForm(
                     .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
             ) {
                 Text(
-                    text = when (state.action) {
-                        ViewState.Action.SIGN_IN -> "Log In"
-                        ViewState.Action.SIGN_UP -> "Create Account"
+                    text = when (action) {
+                        Action.SIGN_IN -> "Log In"
+                        Action.SIGN_UP -> "Create Account"
                     }
                 )
             }
             TextButton(
                 onClick = {
-                    state = state.copy(
-                        password = "",
-                        passwordAgain = "",
-                        action = when (state.action) {
-                            ViewState.Action.SIGN_IN -> ViewState.Action.SIGN_UP
-                            ViewState.Action.SIGN_UP -> ViewState.Action.SIGN_IN
-                        }
-                    )
+                    password = ""
+                    passwordAgain = ""
+                    action = when (action) {
+                        Action.SIGN_IN -> Action.SIGN_UP
+                        Action.SIGN_UP -> Action.SIGN_IN
+                    }
                 },
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
             ) {
                 Text(
-                    text = when (state.action) {
-                        ViewState.Action.SIGN_IN -> "Create Account"
-                        ViewState.Action.SIGN_UP -> "Log In"
+                    text = when (action) {
+                        Action.SIGN_IN -> "Create Account"
+                        Action.SIGN_UP -> "Log In"
                     }
                 )
             }
