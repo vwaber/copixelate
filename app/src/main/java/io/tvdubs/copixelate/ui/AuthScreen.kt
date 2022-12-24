@@ -1,6 +1,7 @@
 package io.tvdubs.copixelate.ui
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -124,7 +125,12 @@ private fun AuthForm(
         )
 
         // Display Name input field
-        if (action == Action.SIGN_UP) {
+        AnimatedVisibility(
+            visible = when (action) {
+                Action.SIGN_IN -> false
+                Action.SIGN_UP -> true
+            }
+        ) {
             TextInputField(
                 value = displayName,
                 onValueChange = { value -> displayName = value },
@@ -148,7 +154,12 @@ private fun AuthForm(
         )
 
         // Password Again input field
-        if (action == Action.SIGN_UP) {
+        AnimatedVisibility(
+            visible = when (action) {
+                Action.SIGN_IN -> false
+                Action.SIGN_UP -> true
+            }
+        ) {
             SecretTextInputField(
                 value = passwordAgain,
                 onValueChange = { value -> passwordAgain = value },
