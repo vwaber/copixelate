@@ -109,10 +109,10 @@ private fun AuthForm(
     val composableScope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
-            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(8.dp),
     ) {
 
         // Email input field
@@ -120,8 +120,6 @@ private fun AuthForm(
             value = email,
             onValueChange = { value -> email = value },
             label = { Text(text = "Email") },
-            modifier = Modifier
-                .padding(bottom = 4.dp)
         )
 
         // Display Name input field
@@ -136,7 +134,7 @@ private fun AuthForm(
                 onValueChange = { value -> displayName = value },
                 label = { Text(text = "Display Name") },
                 modifier = Modifier
-                    .padding(bottom = 4.dp)
+                    .padding(top = 4.dp)
             )
         }
 
@@ -150,7 +148,7 @@ private fun AuthForm(
                 Action.SIGN_UP -> ImeAction.Next
             },
             modifier = Modifier
-                .padding(bottom = 4.dp)
+                .padding(top = 4.dp)
         )
 
         // Password Again input field
@@ -165,6 +163,8 @@ private fun AuthForm(
                 onValueChange = { value -> passwordAgain = value },
                 label = { Text(text = "Password... again") },
                 imeAction = ImeAction.Done,
+                modifier = Modifier
+                    .padding(top = 4.dp)
             )
         }
 
@@ -179,7 +179,7 @@ private fun AuthForm(
                 }
             },
             modifier = Modifier
-                .padding(top = 32.dp)
+                .padding(top = 8.dp)
                 .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
         ) {
             Text(
@@ -197,7 +197,6 @@ private fun AuthForm(
                 action = action.next()
             },
             modifier = Modifier
-                .padding(top = 16.dp)
                 .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
         ) {
             Text(
