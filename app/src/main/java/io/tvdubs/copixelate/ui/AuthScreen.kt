@@ -58,10 +58,13 @@ fun AuthScreen(navController: NavController) {
         }
     }
 
-    AuthForm(
-        onSignUp = onSignUp,
-        onSignIn = onSignIn
-    )
+    Scroller {
+        AuthForm(
+            onSignUp = onSignUp,
+            onSignIn = onSignIn
+        )
+    }
+
 }
 
 @Preview
@@ -69,7 +72,7 @@ fun AuthScreen(navController: NavController) {
 fun AuthScreenPreview() {
 
     CopixelateTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
+        Scroller {
             AuthForm(
                 onSignUp = { _, _, _ -> },
                 onSignIn = { _, _ -> }
@@ -88,6 +91,127 @@ private enum class Action {
     }
 }
 
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun AuthForm(
+    onSignUp: (email: String, displayName: String, password: String) -> Unit,
+    onSignIn: (email: String, password: String) -> Unit
+) {
+
+    var action: Action by remember { mutableStateOf(Action.SIGN_IN) }
+
+    var email: String by remember { mutableStateOf("") }
+    var displayName: String by remember { mutableStateOf("") }
+    var password: String by remember { mutableStateOf("") }
+    var passwordAgain: String by remember { mutableStateOf("") }
+
+    val composableScope = rememberCoroutineScope()
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // Email input field
+        TextInputField(
+            value = email,
+            onValueChange = { value -> email = value },
+            label = { Text(text = "Email") },
+            modifier = Modifier
+                .padding(bottom = 4.dp)
+        )
+
+        // Display Name input field
+        if (action == Action.SIGN_UP) {
+            TextInputField(
+                value = displayName,
+                onValueChange = { value -> displayName = value },
+                label = { Text(text = "Display Name") },
+                modifier = Modifier
+                    .padding(bottom = 4.dp)
+            )
+        }
+
+        // Password input field
+        SecretTextInputField(
+            value = password,
+            onValueChange = { value -> password = value },
+            label = { Text(text = "Password") },
+            imeAction = when (action) {
+                Action.SIGN_IN -> ImeAction.Done
+                Action.SIGN_UP -> ImeAction.Next
+            },
+            modifier = Modifier
+                .padding(bottom = 4.dp)
+        )
+
+        // Password Again input field
+        if (action == Action.SIGN_UP) {
+            SecretTextInputField(
+                value = passwordAgain,
+                onValueChange = { value -> passwordAgain = value },
+                label = { Text(text = "Password... again") },
+                imeAction = ImeAction.Done,
+            )
+        }
+
+        // Action Button
+        Button(
+            onClick = {
+                composableScope.launch {
+                    when (action) {
+                        Action.SIGN_IN -> onSignIn(email, password)
+                        Action.SIGN_UP -> onSignUp(email, displayName, password)
+                    }
+                }
+            },
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
+        ) {
+            Text(
+                text = when (action) {
+                    Action.SIGN_IN -> "Log In"
+                    Action.SIGN_UP -> "Create Account"
+                }
+            )
+        }
+
+        // Switch Action Button
+        TextButton(
+            onClick = {
+                passwordAgain = ""
+                action = action.next()
+            },
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
+        ) {
+            Text(
+                text = when (action) {
+                    Action.SIGN_IN -> "Create Account"
+                    Action.SIGN_UP -> "Log In"
+                }
+            )
+        }
+
+    }// End Column
+
+}// End AuthForm
+
+@Composable
+private fun Scroller(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        content()
+    }
+}
+
 private enum class Visibility {
     VISIBLE, HIDDEN;
 
@@ -99,180 +223,72 @@ private enum class Visibility {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun AuthForm(
-    onSignUp: (email: String, displayName: String, password: String) -> Unit,
-    onSignIn: (email: String, password: String) -> Unit
+private fun SecretTextInputField(
+    value: String,
+    onValueChange: (value: String) -> Unit,
+    label: @Composable (() -> Unit),
+    modifier: Modifier = Modifier,
+    imeAction: ImeAction = ImeAction.Next,
 ) {
 
-    var action: Action by remember { mutableStateOf(Action.SIGN_IN) }
-    var email: String by remember { mutableStateOf("") }
-    var displayName: String by remember { mutableStateOf("") }
-    var password: String by remember { mutableStateOf("") }
-    var passwordVisibility: Visibility by remember { mutableStateOf(Visibility.HIDDEN) }
-    var passwordAgain: String by remember { mutableStateOf("") }
-    var passwordAgainVisibility: Visibility by remember { mutableStateOf(Visibility.HIDDEN) }
+    var visibility: Visibility by remember { mutableStateOf(Visibility.HIDDEN) }
+    val focusManager = LocalFocusManager.current
 
-    val composableScope = rememberCoroutineScope()
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        visualTransformation = when (visibility) {
+            Visibility.VISIBLE -> VisualTransformation.None
+            Visibility.HIDDEN -> PasswordVisualTransformation()
+        },
+        trailingIcon = {
+            val image = when (visibility) {
+                Visibility.VISIBLE -> Icons.Filled.VisibilityOff
+                Visibility.HIDDEN -> Icons.Filled.Visibility
+            }
+            val contentDescription = when (visibility) {
+                Visibility.VISIBLE -> "Hide password"
+                Visibility.HIDDEN -> "Show password"
+            }
+            IconButton(onClick = { visibility = visibility.toggle() }) {
+                Icon(image, contentDescription)
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = when (imeAction) {
+            ImeAction.Next -> {
+                KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) })
+            }
+            ImeAction.Done -> {
+                KeyboardActions(onDone = { focusManager.clearFocus() })
+            }
+            else -> KeyboardActions.Default
+        },
+        modifier = modifier
+    )
+
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TextInputField(
+    value: String,
+    onValueChange: (value: String) -> Unit,
+    label: @Composable (() -> Unit),
+    modifier: Modifier = Modifier
+) {
 
     val focusManager = LocalFocusManager.current
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(
+            onNext = { focusManager.moveFocus(FocusDirection.Next) })
+    )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            // Email Input Field
-            OutlinedTextField(
-                value = email,
-                onValueChange = { value -> email = value },
-                label = { Text(text = "Email") },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                modifier = Modifier
-                    .padding(bottom = 4.dp),
-            )
-            // Display Name Input Field
-            if (action == Action.SIGN_UP) {
-                OutlinedTextField(
-                    value = displayName,
-                    onValueChange = { value -> displayName = value },
-                    label = { Text(text = "Display Name") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                    modifier = Modifier
-                        .padding(bottom = 4.dp)
-                )
-            }
-            // Password Input Field
-            OutlinedTextField(
-                value = password,
-                onValueChange = { value -> password = value },
-                label = { Text(text = "Password") },
-                visualTransformation = when (passwordVisibility) {
-                    Visibility.VISIBLE -> VisualTransformation.None
-                    Visibility.HIDDEN -> PasswordVisualTransformation()
-                },
-                trailingIcon = {
-                    val image = when (passwordVisibility) {
-                        Visibility.VISIBLE -> Icons.Filled.VisibilityOff
-                        Visibility.HIDDEN -> Icons.Filled.Visibility
-                    }
-                    val contentDescription = when (passwordVisibility) {
-                        Visibility.VISIBLE -> "Hide password"
-                        Visibility.HIDDEN -> "Show password"
-                    }
-                    IconButton(onClick = { passwordVisibility = passwordVisibility.toggle() }) {
-                        Icon(image, contentDescription)
-                    }
-                },
-                keyboardOptions = when (action) {
-                    Action.SIGN_IN -> KeyboardOptions(imeAction = ImeAction.Done)
-                    Action.SIGN_UP -> KeyboardOptions(imeAction = ImeAction.Next)
-                },
-                keyboardActions = when (action) {
-                    Action.SIGN_IN -> {
-                        KeyboardActions(onDone = { focusManager.clearFocus() })
-                    }
-                    Action.SIGN_UP -> {
-                        KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                    }
-                },
-                modifier = Modifier
-                    .padding(bottom = 4.dp)
-            )
-            // Password Again Input Field
-            if (action == Action.SIGN_UP) {
-                OutlinedTextField(
-                    value = passwordAgain,
-                    onValueChange = { value -> passwordAgain = value },
-                    label = { Text(text = "Password... again") },
-                    visualTransformation = when (passwordAgainVisibility) {
-                        Visibility.VISIBLE -> VisualTransformation.None
-                        Visibility.HIDDEN -> PasswordVisualTransformation()
-                    },
-                    trailingIcon = {
-                        val image = when (passwordAgainVisibility) {
-                            Visibility.VISIBLE -> Icons.Filled.VisibilityOff
-                            Visibility.HIDDEN -> Icons.Filled.Visibility
-                        }
-                        val contentDescription = when (passwordAgainVisibility) {
-                            Visibility.VISIBLE -> "Hide password confirm"
-                            Visibility.HIDDEN -> "Show password confirm"
-                        }
-                        IconButton(onClick = {
-                            passwordAgainVisibility = passwordAgainVisibility.toggle()
-                        }) {
-                            Icon(image, contentDescription)
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }),
-                    modifier = Modifier
-                )
-            }
-            // Action Button
-            Button(
-                onClick = {
-                    composableScope.launch {
-                        when (action) {
-                            Action.SIGN_IN -> onSignIn(
-                                email,
-                                password
-                            )
-                            Action.SIGN_UP -> onSignUp(
-                                email,
-                                displayName,
-                                password
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .padding(top = 32.dp)
-                    .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
-            ) {
-                Text(
-                    text = when (action) {
-                        Action.SIGN_IN -> "Log In"
-                        Action.SIGN_UP -> "Create Account"
-                    }
-                )
-            }
-            // Switch Action Button
-            TextButton(
-                onClick = {
-                    password = ""
-                    passwordVisibility = Visibility.HIDDEN
-                    passwordAgain = ""
-                    passwordAgainVisibility = Visibility.HIDDEN
-                    action = action.next()
-                },
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .defaultMinSize(minWidth = TextFieldDefaults.MinWidth)
-            ) {
-                Text(
-                    text = when (action) {
-                        Action.SIGN_IN -> "Create Account"
-                        Action.SIGN_UP -> "Log In"
-                    }
-                )
-            }
-
-        }// End Column
-
-    }// End Surface
-
-}// End AuthForm
+}
