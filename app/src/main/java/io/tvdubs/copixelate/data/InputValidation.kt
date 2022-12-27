@@ -35,12 +35,14 @@ sealed class InputValidity {
 
     object Valid : InputValidity()
 
-    fun isValid() = when (this) {
-        is Valid -> true
-        else -> false
-    }
+    val isValid
+        get() = when (this) {
+            is Valid -> true
+            else -> false
+        }
 
-    fun isNotValid() = !isValid()
+    val isNotValid
+        get() = !isValid
 
     sealed class Email : InputValidity() {
         object Invalid : Email()

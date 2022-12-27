@@ -142,7 +142,7 @@ private fun AuthForm(
             onValueChange = { value -> email = value },
             label = { Text(text = "Email") },
             validity = InputValidation.checkEmail(email)
-                .also { validity -> isEmailValid = validity.isValid() }
+                .also { validity -> isEmailValid = validity.isValid }
         )
 
         // Display Name input field
@@ -157,7 +157,7 @@ private fun AuthForm(
                 onValueChange = { value -> displayName = value },
                 label = { Text(text = "Display Name") },
                 validity = InputValidation.checkDisplayName(displayName)
-                    .also { validity -> isDisplayNameValid = validity.isValid() },
+                    .also { validity -> isDisplayNameValid = validity.isValid },
                 modifier = Modifier
                     .padding(top = 4.dp)
             )
@@ -173,7 +173,7 @@ private fun AuthForm(
                 FormAction.SIGN_UP -> ImeAction.Next
             },
             validity = InputValidation.checkPassword(password)
-                .also { validity -> isPasswordValid = validity.isValid() },
+                .also { validity -> isPasswordValid = validity.isValid },
             modifier = Modifier
                 .padding(top = 4.dp)
         )
@@ -191,7 +191,7 @@ private fun AuthForm(
                 label = { Text(text = "Password... again") },
                 imeAction = ImeAction.Done,
                 validity = InputValidation.checkPasswordMatch(password, passwordAgain)
-                    .also { validity -> isPasswordAgainValid = validity.isValid() },
+                    .also { validity -> isPasswordAgainValid = validity.isValid },
                 modifier = Modifier
                     .padding(top = 4.dp)
             )
@@ -309,7 +309,7 @@ private fun ValidatedTextInputField(
     var lastFocusedState by rememberSaveable { mutableStateOf(false) }
 
     var isError by rememberSaveable { mutableStateOf(false) }
-    isError = isError && (validity !is InputValidity.Valid) && value.isNotEmpty()
+    isError = isError && validity.isNotValid && value.isNotEmpty()
 
     Column {
         KeyboardActionTextInputField(
