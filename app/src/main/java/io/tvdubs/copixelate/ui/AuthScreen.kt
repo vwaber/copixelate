@@ -209,7 +209,7 @@ private fun AuthForm(
             },
             enabled = when (action) {
                 FormAction.SIGN_IN -> isEmailValid && isPasswordValid
-                FormAction.SIGN_UP -> isEmailValid && isDisplayNameValid
+                FormAction.SIGN_UP -> isEmailValid && isDisplayNameValid && isPasswordValid && isPasswordAgainValid
             },
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -304,7 +304,7 @@ private fun ValidatedTextInputField(
     imeAction: ImeAction = ImeAction.Next,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingIcon: @Composable (() -> Unit)? = null,
-    ) {
+) {
 
     var lastFocusedState by rememberSaveable { mutableStateOf(false) }
 
