@@ -39,7 +39,7 @@ fun BottomBar(navController: NavHostController) {
 
     val navBarItems = listOf(
         ScreenInfo.Art,
-        ScreenInfo.Messages
+        ScreenInfo.Overview
     )
 
     NavigationBar {

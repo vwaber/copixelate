@@ -1,4 +1,4 @@
-package io.tvdubs.copixelate.ui
+package io.tvdubs.copixelate.ui.screens
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
