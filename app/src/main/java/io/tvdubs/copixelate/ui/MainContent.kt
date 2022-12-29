@@ -50,11 +50,9 @@ fun BottomBar(navController: NavHostController) {
                 icon = {
                     Icon(
                         Icons.Filled.Favorite,
-                        contentDescription = "Butt icon"
+                        contentDescription = "TBD icon"
                     )
                 },
-                //label = { Text(stringResource(screenInfo.resourceId)) },
-                label = { Text("Butt") },
                 selected = currentDestination?.hierarchy?.any { it.route == screenInfo.route } == true,
                 onClick = {
                     navController.navigate(screenInfo.route) {
@@ -73,6 +71,6 @@ fun BottomBar(navController: NavHostController) {
                 }
             )// End NavigationBarItem
         }// End navBarItems.forEach
-    }// End Navigation
+    }// End NavigationBar
 
 }
