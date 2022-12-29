@@ -6,20 +6,20 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import vwaber.copixelate.art.ArtBoard
+import vwaber.copixelate.art.ArtSpace
 import vwaber.copixelate.art.PointF
 
 class ArtViewModel : ViewModel() {
 
-    private val artBoard = ArtBoard()
+    private val artSpace = ArtSpace()
 
-    private val _drawingBitmapData = MutableStateFlow(artBoard.drawingBitmapData)
+    private val _drawingBitmapData = MutableStateFlow(artSpace.drawingBitmapData)
 
-    private val _paletteBitmapData = MutableStateFlow(artBoard.paletteBitmapData)
-    private val _paletteBorderBitmapData = MutableStateFlow(artBoard.paletteBorderBitmapData)
-    private val _brushBitmapData = MutableStateFlow(artBoard.brushBitmapData)
+    private val _paletteBitmapData = MutableStateFlow(artSpace.paletteBitmapData)
+    private val _paletteBorderBitmapData = MutableStateFlow(artSpace.paletteBorderBitmapData)
+    private val _brushBitmapData = MutableStateFlow(artSpace.brushBitmapData)
 
-    private val _brushSize = MutableStateFlow(artBoard.brushSize)
+    private val _brushSize = MutableStateFlow(artSpace.brushSize)
 
     val drawingBitmapData = _drawingBitmapData.asStateFlow()
 
@@ -31,8 +31,8 @@ class ArtViewModel : ViewModel() {
     fun updateDrawing(unitPosition: PointF) {
         viewModelScope.launch {
 
-            artBoard.updateDrawing(unitPosition).fold({
-                _drawingBitmapData.value = artBoard.drawingBitmapData
+            artSpace.updateDrawing(unitPosition).fold({
+                _drawingBitmapData.value = artSpace.drawingBitmapData
             }, { Log.d(javaClass.simpleName, it.toString()) })
 
         }
@@ -41,10 +41,10 @@ class ArtViewModel : ViewModel() {
     fun updatePaletteActiveIndex(unitPosition: PointF) {
         viewModelScope.launch {
 
-            artBoard.updatePalette(unitPosition).fold({
-                _paletteBitmapData.value = artBoard.paletteBitmapData
-                _paletteBorderBitmapData.value = artBoard.paletteBorderBitmapData
-                _brushBitmapData.value = artBoard.brushBitmapData
+            artSpace.updatePalette(unitPosition).fold({
+                _paletteBitmapData.value = artSpace.paletteBitmapData
+                _paletteBorderBitmapData.value = artSpace.paletteBorderBitmapData
+                _brushBitmapData.value = artSpace.brushBitmapData
             }, { Log.d(javaClass.simpleName, it.toString()) })
 
         }
@@ -53,8 +53,8 @@ class ArtViewModel : ViewModel() {
     fun updateBrush(size: Int) {
         viewModelScope.launch {
 
-            artBoard.updateBrushSize(size)
-            _brushBitmapData.value = artBoard.brushBitmapData
+            artSpace.updateBrushSize(size)
+            _brushBitmapData.value = artSpace.brushBitmapData
 
         }
     }

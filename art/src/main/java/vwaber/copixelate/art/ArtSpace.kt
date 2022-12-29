@@ -10,7 +10,7 @@ private const val DEFAULT_PALETTE_HEIGHT = 2
 private const val DEFAULT_BRUSH_SIZE = 7
 private val DEFAULT_BRUSH_STYLE = Brush.Style.CIRCLE
 
-class ArtBoard {
+class ArtSpace {
 
     val drawingBitmapData get() = drawing.bitmapData
     val paletteBitmapData get() = palette.bitmapData
