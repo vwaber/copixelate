@@ -8,19 +8,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import io.tvdubs.copixelate.data.Auth
 import io.tvdubs.copixelate.nav.ScreenInfo
-import io.tvdubs.copixelate.viewmodel.UserViewModel
+import io.tvdubs.copixelate.nav.refresh
 
 @Composable
-fun MessagesScreen(navController: NavController, viewModel: UserViewModel) {
+fun MessagesScreen(navController: NavController) {
 
     MessagesScreenContent(
         clickMessageThread = { navController.navigate(ScreenInfo.MessageThread.route) },
         onLogoutClick = {
-            viewModel.logout()
-            navController.navigate(ScreenInfo.Art.route)
+            Auth.signOut()
+            navController.refresh()
         },
-        username = viewModel.auth.currentUser?.displayName
+        username = Auth.displayName
     )
 }
 
