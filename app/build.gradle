@@ -49,8 +49,6 @@ android {
 
 dependencies {
     implementation project(':art')
-    implementation project(':core')
-    implementation project(':data')
 
     implementation 'androidx.core:core-ktx:1.9.0'
 
