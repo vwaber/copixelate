@@ -329,17 +329,15 @@ private fun ValidatedTextInputField(
 
         if (isError) {
 
-            val resourceId: Int = when (validity) {
-                InputValidity.Email.Invalid -> R.string.invalid_email
+            val resourceId: Int = when (validity as InputValidity.Invalid) {
+                InputValidity.Invalid.Email.Invalid -> R.string.invalid_email
 
-                InputValidity.DisplayName.TooShort -> R.string.invalid_display_name_too_short
-                InputValidity.DisplayName.TooLong -> R.string.invalid_display_name_too_long
+                InputValidity.Invalid.DisplayName.TooShort -> R.string.invalid_display_name_too_short
+                InputValidity.Invalid.DisplayName.TooLong -> R.string.invalid_display_name_too_long
 
-                InputValidity.Password.TooShort -> R.string.invalid_password_too_short
-                InputValidity.Password.TooLong -> R.string.invalid_password_too_long
-                InputValidity.Password.NoMatch -> R.string.invalid_password_no_match
-
-                InputValidity.Valid -> 0
+                InputValidity.Invalid.Password.TooShort -> R.string.invalid_password_too_short
+                InputValidity.Invalid.Password.TooLong -> R.string.invalid_password_too_long
+                InputValidity.Invalid.Password.NoMatch -> R.string.invalid_password_no_match
             }
 
             if (resourceId != 0) {
