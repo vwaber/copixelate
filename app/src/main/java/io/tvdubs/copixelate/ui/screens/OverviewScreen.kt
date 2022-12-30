@@ -1,4 +1,4 @@
-package io.tvdubs.copixelate.ui
+package io.tvdubs.copixelate.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -9,14 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.tvdubs.copixelate.data.Auth
-import io.tvdubs.copixelate.nav.ScreenInfo
 import io.tvdubs.copixelate.nav.refresh
 
 @Composable
-fun MessagesScreen(navController: NavController) {
+fun OverviewScreen(navController: NavController) {
 
-    MessagesScreenContent(
-        clickMessageThread = { navController.navigate(ScreenInfo.MessageThread.route) },
+    OverviewScreenContent(
+        clickMessageThread = { }, //navController.navigate(ScreenInfo.???.route) },
         onLogoutClick = {
             Auth.signOut()
             navController.refresh()
@@ -26,7 +25,7 @@ fun MessagesScreen(navController: NavController) {
 }
 
 @Composable
-fun MessagesScreenContent(
+fun OverviewScreenContent(
     clickMessageThread: () -> Unit,
     onLogoutClick: () -> Unit,
     username: String?

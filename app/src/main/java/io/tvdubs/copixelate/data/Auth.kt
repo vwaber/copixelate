@@ -14,10 +14,10 @@ object Auth {
 
     private val auth: FirebaseAuth = Firebase.auth
 
-    enum class State{SIGNED_IN, SIGNED_OUT}
+    enum class State { SIGNED_IN, SIGNED_OUT }
 
     val state: State
-    get() = auth.currentUser?.let { State.SIGNED_IN } ?: State.SIGNED_OUT
+        get() = auth.currentUser?.let { State.SIGNED_IN } ?: State.SIGNED_OUT
 
     val displayName: String
         get() = auth.currentUser?.displayName ?: "Local User"

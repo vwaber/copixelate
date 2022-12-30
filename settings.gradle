@@ -15,5 +15,3 @@ dependencyResolutionManagement {
 rootProject.name = "Copixelate"
 include ':app'
 include ':art'
-include ':core'
-include ':data'
