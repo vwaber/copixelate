@@ -96,6 +96,10 @@ fun ArtScreenContent(
                 .height(100.dp)
         ) {
 
+            BrushPreview(
+                bitmapData = brushBitmapData,
+                modifier = Modifier.fillMaxHeight()
+            )
             Palette(
                 bitmapData = paletteBitmapData,
                 borderBitmapData = paletteBorderBitmapData,
@@ -104,10 +108,6 @@ fun ArtScreenContent(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f)
-            )
-            BrushPreview(
-                bitmapData = brushBitmapData,
-                modifier = Modifier.fillMaxHeight()
             )
 
         }// End Row
