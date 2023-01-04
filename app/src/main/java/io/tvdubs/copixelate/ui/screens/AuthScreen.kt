@@ -52,12 +52,10 @@ fun AuthScreen(navController: NavController) {
         }
     }
 
-    Scroller {
-        AuthForm(
-            onSignUp = onSignUp,
-            onSignIn = onSignIn
-        )
-    }
+    AuthScreenContent(
+        onSignUp = onSignUp,
+        onSignIn = onSignIn
+    )
 
 }
 
@@ -66,14 +64,25 @@ fun AuthScreen(navController: NavController) {
 fun AuthScreenPreview() {
 
     CopixelateTheme(darkTheme = true) {
-        Scroller {
-            AuthForm(
-                onSignUp = { _, _, _ -> },
-                onSignIn = { _, _ -> }
-            )
-        }
+        AuthScreenContent(
+            onSignUp = { _, _, _ -> },
+            onSignIn = { _, _ -> }
+        )
     }
 
+}
+
+@Composable
+private fun AuthScreenContent(
+    onSignUp: (email: String, displayName: String, password: String) -> Unit,
+    onSignIn: (email: String, password: String) -> Unit
+) {
+    Scroller {
+        AuthForm(
+            onSignUp = onSignUp,
+            onSignIn = onSignIn
+        )
+    }
 }
 
 @Composable
