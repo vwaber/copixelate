@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,23 +16,70 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.tvdubs.copixelate.ui.theme.CopixelateTheme
 import vwaber.copixelate.art.BitmapData
 import vwaber.copixelate.art.Point
 import vwaber.copixelate.art.PointF
 import io.tvdubs.copixelate.viewmodel.ArtViewModel
+import vwaber.copixelate.art.ArtSpace
 
 @Composable
 fun ArtScreen(viewModel: ArtViewModel) {
 
-    val drawingBitmapData by viewModel.drawingBitmapData.collectAsState()
+    ArtScreenContent(
+        drawingBitmapData = viewModel.drawingBitmapData.collectAsState().value,
+        paletteBitmapData = viewModel.paletteBitmapData.collectAsState().value,
+        paletteBorderBitmapData = viewModel.paletteBorderBitmapData.collectAsState().value,
+        brushBitmapData = viewModel.brushBitmapData.collectAsState().value,
+        initialBrushSize = viewModel.brushSize,
+        onTouchDrawing = { unitPosition -> viewModel.updateDrawing(unitPosition) },
+        onTouchPalette = { unitPosition -> viewModel.updatePalette(unitPosition) },
+        onBrushSizeUpdate = { size -> viewModel.updateBrush(size) }
+    )
 
-    val paletteBitmapData by viewModel.paletteBitmapData.collectAsState()
-    val paletteBorderBitmapData by viewModel.paletteBorderBitmapData.collectAsState()
-    val brushBitmapData by viewModel.brushBitmapData.collectAsState()
-    val brushSize by viewModel.brushSize.collectAsState()
+}
+
+@Preview
+@Composable
+fun ArtScreenPreview() {
+
+    val artSpace = ArtSpace()
+
+    CopixelateTheme(darkTheme = true) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+
+            ArtScreenContent(
+                drawingBitmapData = artSpace.drawingBitmapData,
+                paletteBitmapData = artSpace.paletteBitmapData,
+                paletteBorderBitmapData = artSpace.paletteBorderBitmapData,
+                brushBitmapData = artSpace.brushBitmapData,
+                initialBrushSize = artSpace.brushSize,
+                onTouchDrawing = {},
+                onTouchPalette = {},
+                onBrushSizeUpdate = {}
+            )
+
+        }
+    }
+
+}
+
+@Composable
+fun ArtScreenContent(
+    drawingBitmapData: BitmapData,
+    paletteBitmapData: BitmapData,
+    paletteBorderBitmapData: BitmapData,
+    brushBitmapData: BitmapData,
+    initialBrushSize: Int,
+    onTouchDrawing: (unitPosition: PointF) -> Unit,
+    onTouchPalette: (unitPosition: PointF) -> Unit,
+    onBrushSizeUpdate: (Int) -> Unit
+
+) {
 
     Column(
         Modifier.fillMaxSize(),
@@ -40,7 +88,7 @@ fun ArtScreen(viewModel: ArtViewModel) {
 
         Drawing(
             bitmapData = drawingBitmapData,
-            onDraw = { unitPosition -> viewModel.updateDrawing(unitPosition) }
+            onDraw = onTouchDrawing
         )
         Row(
             modifier = Modifier
@@ -48,26 +96,24 @@ fun ArtScreen(viewModel: ArtViewModel) {
                 .height(100.dp)
         ) {
 
-            Palette(
-                bitmapData = paletteBitmapData,
-                borderBitmapData = paletteBorderBitmapData,
-                borderStroke = 10.dp,
-                onUpdatePaletteActiveIndex = { unitPosition ->
-                    viewModel.updatePaletteActiveIndex(unitPosition)
-                },
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
-            )
             BrushPreview(
                 bitmapData = brushBitmapData,
                 modifier = Modifier.fillMaxHeight()
             )
+            Palette(
+                bitmapData = paletteBitmapData,
+                borderBitmapData = paletteBorderBitmapData,
+                borderStroke = 10.dp,
+                onUpdatePaletteActiveIndex = onTouchPalette,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            )
 
         }// End Row
         BrushSizeSlider(
-            steps = SliderSteps(1, 16, brushSize),
-            onSizeChange = { size -> viewModel.updateBrush(size) },
+            steps = SliderSteps(1, 16, initialBrushSize),
+            onSizeChange = onBrushSizeUpdate,
             modifier = Modifier.padding(horizontal = 40.dp)
         )
 
