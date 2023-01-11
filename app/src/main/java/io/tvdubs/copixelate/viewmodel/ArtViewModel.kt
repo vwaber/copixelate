@@ -3,6 +3,8 @@ package io.tvdubs.copixelate.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.tvdubs.copixelate.data.ArtRepo
+import io.tvdubs.copixelate.data.remote.FirebaseDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -12,6 +14,16 @@ import vwaber.copixelate.art.PointF
 class ArtViewModel : ViewModel() {
 
     private val artSpace = ArtSpace()
+
+    private val repo = ArtRepo(
+        remoteDataSource = FirebaseDataSource()
+    )
+
+    init {
+        viewModelScope.launch {
+            repo.stub()
+        }
+    }
 
     private val _drawingBitmapData = MutableStateFlow(artSpace.drawingBitmapData)
     private val _paletteBitmapData = MutableStateFlow(artSpace.paletteBitmapData)
