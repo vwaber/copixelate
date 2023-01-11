@@ -26,6 +26,8 @@ class ArtRepo(
 
     suspend fun stub() {
 
+        if(Auth.state == Auth.State.SIGNED_OUT) return
+
         coroutineScope {
             Log.d("GET_SPACE", remoteDataSource.getSpace("space_1").toString())
             Log.d("GET_DRAWING", remoteDataSource.getDrawing("drawing_1").toString())
